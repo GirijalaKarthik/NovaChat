@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NovaChat Gold</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- 1. GLOBAL SETTINGS (Dark Luxury Theme) --- */
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #050505; /* Ultra Dark Background */
+            color: white;
+            margin: 0; padding: 0;
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0;
+        }
+
+        /* --- LOGIN SCREEN --- */
+        #login-screen { 
+            display: flex; align-items: center; justify-content: center; 
+            width: 100%; height: 100%; 
+            position: absolute; z-index: 1000; background: #050505; 
+        }
+        
+        .login-card { 
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid rgba(255, 215, 0, 0.2); /* Subtle Gold Border */
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
+            padding: 30px; border-radius: 20px; 
+            width: 90%; max-width: 400px; 
+            text-align: center;
+        }
+        
+        .login-card input {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: white; padding: 15px 25px; border-radius: 50px; 
+            width: 100%; outline: none; margin-bottom: 15px; transition: 0.3s;
+        }
+        .login-card input:focus { border-color: #FFD700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+
+        .login-btn { 
+            background: linear-gradient(135deg, #FFD700, #FFA500); 
+            border: none; color: #000; padding: 12px; border-radius: 50px; 
+            font-weight: 900; width: 100%; margin-bottom: 10px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+
+        /* --- 2. MAIN APP LAYOUT --- */
+        #app-screen { 
+            display: none; 
+            position: absolute; 
+            top: 0; bottom: 0; left: 0; right: 0;
+            background: transparent; 
+            overflow: hidden;
+            display: flex; 
+            flex-direction: row;
+        }
+        
+        /* --- SIDEBAR --- */
+        .sidebar { 
+            width: 300px; 
+            background: #0a0a0a; 
+            border-right: 1px solid rgba(255,255,255,0.05);
+            display: flex; flex-direction: column; 
+            flex-shrink: 0; 
+        }
+
+        .sidebar-header { padding: 25px; border-bottom: 1px solid rgba(255, 215, 0, 0.1); white-space: nowrap; overflow: hidden;}
+        
+        .list-group-item { 
+            background: transparent; color: rgba(255,255,255,0.6); 
+            border: none; padding: 15px 20px; cursor: pointer; display: flex; align-items: center;
+            position: relative; transition: 0.2s;
+        }
+        .list-group-item:hover { background: rgba(255, 215, 0, 0.1); color: #FFD700; }
+        
+        .list-group-item.active-chat { 
+            background: linear-gradient(90deg, #FFD700, #FFA500) !important; 
+            color: black !important; font-weight: bold;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        /* --- CHAT AREA --- */
+        .chat-area { 
+            flex: 1; min-width: 0; 
+            display: flex; flex-direction: column; height: 100%; 
+        }
+        
+        .chat-header { 
+            background: #0a0a0a;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 0 15px; height: 60px; 
+            display: flex; align-items: center; justify-content: space-between; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
+            color: #FFD700;
+            flex-shrink: 0; z-index: 10;
+        }
+
+        /* --- MESSAGES AREA --- */
+        #messages { 
+            flex: 1; list-style: none; padding: 15px; 
+            overflow-y: auto; overflow-x: hidden; 
+            display: flex; flex-direction: column; gap: 15px; 
+        }
+        
+        .message-wrapper { 
+            max-width: 75%; 
+            display: flex; flex-direction: column; position: relative; 
+        }
+
+        .msg-name { font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; margin-left: 12px; opacity: 0.8; }
+        .msg-bubble { padding: 10px 15px; border-radius: 20px; font-size: 0.95rem; word-wrap: break-word; cursor: pointer; }
+
+        .msg-sent { align-self: flex-end; align-items: flex-end; margin-right: 5px; }
+        .msg-sent .msg-bubble { 
+            background: linear-gradient(135deg, #FFD700, #FFA500); 
+            color: black; font-weight: 500;
+            border-bottom-right-radius: 2px; 
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
+        }
+        
+        .msg-received { align-self: flex-start; align-items: flex-start; }
+        .msg-received .msg-bubble { background: #222; color: white; border-bottom-left-radius: 2px; border: 1px solid rgba(255,255,255,0.1); cursor: default;}
+
+        .sent-row { display: flex; align-items: center; gap: 8px; }
+
+        /* --- DELETE BUTTON --- */
+        .delete-btn {
+            display: none; 
+            cursor: pointer;
+            color: #ff4d4d;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%; padding: 8px;
+            animation: fadeIn 0.2s;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+
+        /* --- INPUT AREA --- */
+        .input-area { 
+            background: #0a0a0a; 
+            padding: 10px; display: flex; gap: 10px; align-items: center; 
+            border-top: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0; padding-bottom: 15px; 
+        }
+        .input-area input { 
+            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); 
+            color: white; padding: 10px 20px; border-radius: 50px; flex: 1; outline: none; 
+        }
+        .input-area input:focus { border-color: #FFD700; }
+
+        .btn-send { 
+            background: linear-gradient(135deg, #FFD700, #FFA500); 
+            color: #000; border: none; width: 40px; height: 40px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .avatar { 
+            width: 40px; height: 40px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; margin-right: 15px; 
+            background: rgba(255, 215, 0, 0.1); color: #FFD700;
+            border: 1px solid rgba(255, 215, 0, 0.2); flex-shrink: 0;
+        }
+
+        .notification-badge {
+            background-color: #FFD700; color: black; border-radius: 50%;
+            padding: 2px 6px; font-size: 0.7rem; font-weight: bold;
+            position: absolute; right: 10px; top: 35%;
+            box-shadow: 0 0 5px #FFD700;
+        }
+
+        /* --- 📱 MOBILE SPECIFIC CSS --- */
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; } 
+            .sidebar-header h4, .sidebar-header small { display: none; } 
+            /* HEADER ICON MATCHING LOGIN LOGO */
+            .sidebar-header i { font-size: 1.5rem; margin: 0 auto; display: block; text-align: center; color: #FFD700;}
+            
+            .list-group-item div:nth-child(2) { display: none; }
+            .list-group-item { padding: 15px 5px; justify-content: center; }
+            .avatar { margin-right: 0; width: 35px; height: 35px; font-size: 0.9rem;}
+            
+            .notification-badge { top: 5px; right: 5px; font-size: 0.6rem; padding: 1px 4px;}
+            .login-card { width: 90%; padding: 20px; }
+            
+            .msg-bubble { font-size: 0.9rem; padding: 8px 12px; }
+            .message-wrapper { max-width: 80%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <h2 class="fw-bold mb-4" style="color: #FFD700;">
+                <i class="fas fa-meteor me-2"></i>NovaChat
+            </h2>
+            <input type="text" id="username" placeholder="Username" autocomplete="off">
+            <input type="password" id="password" placeholder="Password" autocomplete="off">
+            <button onclick="doLogin()" class="btn login-btn">LAUNCH <i class="fas fa-rocket ms-2"></i></button>
+            <button onclick="doRegister()" class="btn btn-outline-light w-100 rounded-pill">Create Account</button>
+            <p id="login-error" class="text-danger mt-3 small fw-bold"></p>
+        </div>
+    </div>
+
+    <div id="app-screen">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h4 class="m-0 fw-bold" style="color: #FFD700;"><i class="fas fa-meteor"></i> <span class="d-none d-md-inline">NovaChat</span></h4>
+                <small class="d-none d-md-block" style="color: rgba(255,255,255,0.6);">Connected as <span id="my-name-display" class="fw-bold text-white">...</span></small>
+            </div>
+            <ul id="user-list" class="list-group list-group-flush"></ul>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-header" id="main-header">
+                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <h5 id="chat-title" class="m-0 fw-bold">Nebula Network</h5>
+                    <small id="chat-status" style="color: rgba(255,255,255,0.5);">Public Nebula</small>
+                </div>
+                <button class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="clearAllChat()"><i class="fas fa-trash"></i> <span class="d-none d-md-inline">History</span></button>
+            </div>
+            
+            <ul id="messages"></ul>
+            
+            <div class="input-area">
+                <input type="text" id="message-input" placeholder="Message..." onkeypress="handleEnter(event)">
+                <button class="btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let myName = "";
+        let currentRecipient = "Everyone"; 
+        let allMessages = []; 
+        let unreadCounts = {}; 
+
+        function stringToColor(str) {
+            let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            let color = '#'; for (let i = 0; i < 3; i++) color += ('00' + (Math.min((hash >> (i * 8)) & 0xFF, 200)).toString(16)).substr(-2);
+            return color;
+        }
+
+        function doLogin() {
+            const user = document.getElementById("username").value.trim();
+            const pass = document.getElementById("password").value.trim();
+            if(user && pass) {
+                myName = user;
+                socket.emit("login_request", { username: user, password: pass });
+            }
+        }
+
+        function doRegister() {
+            const user = document.getElementById("username").value.trim();
+            const pass = document.getElementById("password").value.trim();
+            if(user && pass) {
+                socket.emit("register_request", { username: user, password: pass });
+            }
+        }
+
+        socket.on("login_response", (data) => {
+            if(data.success) {
+                document.getElementById("login-screen").style.display = "none";
+                document.getElementById("app-screen").style.display = "flex"; 
+                if(document.getElementById("my-name-display")) {
+                    document.getElementById("my-name-display").innerText = myName;
+                }
+            } else {
+                document.getElementById("login-error").innerText = data.msg;
+            }
+        });
+
+        socket.on("register_response", (data) => alert(data.msg));
+
+        function switchChat(user) {
+            currentRecipient = user;
+            unreadCounts[user] = 0;
+            updateUserListUI(); 
+
+            const title = document.getElementById("chat-title");
+            const status = document.getElementById("chat-status");
+            const header = document.getElementById("main-header");
+
+            if (user === "Everyone") {
+                title.innerText = "Nebula Network";
+                status.innerText = "Public Nebula";
+            } else {
+                title.innerText = user;
+                status.innerText = "🔒 Private Signal";
+            }
+            
+            document.querySelectorAll(".list-group-item").forEach(el => el.classList.remove("active-chat"));
+            const activeItem = document.getElementById("user-" + user);
+            if(activeItem) activeItem.classList.add("active-chat");
+
+            renderChat();
+        }
+
+        function renderChat() {
+            const list = document.getElementById("messages");
+            list.innerHTML = "";
+            allMessages.forEach(msg => {
+                let show = false;
+                if (currentRecipient === "Everyone") {
+                    if (!msg.isPrivate) show = true;
+                } else {
+                    if (msg.isPrivate) {
+                        if ((msg.sender === myName && msg.toUser === currentRecipient) || 
+                            (msg.sender === currentRecipient && msg.toUser === myName)) {
+                            show = true;
+                        }
+                    }
+                }
+                if (show) addMessageToDOM(msg);
+            });
+            list.scrollTop = list.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById("message-input");
+            if (input.value.trim() !== "") {
+                socket.emit("send_message", { sender: myName, msg: input.value, toUser: currentRecipient });
+                input.value = "";
+            }
+        }
+
+        function handleEnter(e) { if(e.key === "Enter") sendMessage(); }
+        
+        function toggleDeleteBtn(id) {
+            const btn = document.getElementById("del-btn-" + id);
+            if(btn) {
+                if (btn.style.display === "block") {
+                    btn.style.display = "none";
+                } else {
+                    btn.style.display = "block";
+                }
+            }
+        }
+
+        function deleteMessage(id) { if(confirm("Delete?")) socket.emit("delete_message", id); }
+        function clearAllChat() { if(confirm("Clear history?")) socket.emit("clear_all_chat"); }
+
+        function addMessageToDOM(data) {
+            const list = document.getElementById("messages");
+            const li = document.createElement("li");
+            li.classList.add("message-wrapper");
+            li.id = "msg-" + data.id;
+
+            let html = ``;
+
+            if (data.sender !== myName) {
+                li.classList.add("msg-received");
+                if (currentRecipient === "Everyone") {
+                    const color = stringToColor(data.sender);
+                    html += `<div class="msg-name" style="color:${color};">${data.sender}</div>`;
+                }
+                html += `<div class="msg-bubble">${data.msg}</div>`;
+            } else {
+                li.classList.add("msg-sent");
+                html += `<div class="sent-row">
+                            <div class="msg-bubble" onclick="toggleDeleteBtn(${data.id})">${data.msg}</div>
+                            <i id="del-btn-${data.id}" class="fas fa-trash-alt delete-btn" onclick="deleteMessage(${data.id})"></i>
+                         </div>`;
+            }
+
+            li.innerHTML = html;
+            list.appendChild(li);
+        }
+
+        socket.on("receive_message", (data) => { 
+            allMessages.push(data);
+            if (data.isPrivate && data.sender !== myName && data.sender !== currentRecipient) {
+                if (!unreadCounts[data.sender]) unreadCounts[data.sender] = 0;
+                unreadCounts[data.sender]++;
+                updateUserListUI(); 
+            }
+            renderChat(); 
+        });
+
+        socket.on("load_messages", (data) => {
+            data.forEach(item => {
+                allMessages.push({ 
+                    id: item.id, sender: item.sender_name, msg: item.message, 
+                    isPrivate: item.type === 'private', toUser: 'Everyone' 
+                });
+            });
+            renderChat();
+        });
+        socket.on("message_deleted", (id) => { allMessages = allMessages.filter(m => m.id !== id); renderChat(); });
+        socket.on("chat_cleared", () => { allMessages = []; renderChat(); });
+
+        let currentUsers = [];
+
+        socket.on("update_user_list", (users) => {
+            currentUsers = users;
+            updateUserListUI();
+        });
+
+        function updateUserListUI() {
+            const list = document.getElementById("user-list");
+            let html = `<li class="list-group-item" onclick="switchChat('Everyone')">
+                            <div class="avatar"><i class="fas fa-users"></i></div>
+                            <div><div class="fw-bold">Group</div></div>
+                        </li>`;
+            
+            currentUsers.forEach(u => {
+                if(u !== myName) {
+                    let badgeHtml = "";
+                    if (unreadCounts[u] && unreadCounts[u] > 0) {
+                        badgeHtml = `<span class="notification-badge">${unreadCounts[u]}</span>`;
+                    }
+                    const activeClass = (u === currentRecipient) ? "active-chat" : "";
+                    html += `
+                        <li class="list-group-item ${activeClass}" id="user-${u}" onclick="switchChat('${u}')">
+                            <div class="avatar">${u.charAt(0).toUpperCase()}</div>
+                            <div>
+                                <div class="fw-bold">${u}</div>
+                                <div style="font-size:0.7rem; color:#2ecc71;">● Online</div>
+                            </div>
+                            ${badgeHtml}
+                        </li>`;
+                }
+            });
+            list.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
