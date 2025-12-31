@@ -1,27 +1,16 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const mysql = require("mysql");
 const path = require("path");
+
+// 👇 THIS IS THE FIX: Import the connection from db.js
+const db = require("./db"); 
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(express.static("public"));
-
-// --- DATABASE CONNECTION ---
-const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "tiger", // ⚠️ Check your password
-    database: "studentdb"
-});
-
-db.connect(err => {
-    if (err) throw err;
-    console.log("🚀 MCA CHAT Server Running...");
-});
 
 let onlineUsers = {}; 
 
@@ -37,6 +26,7 @@ io.on("connection", (socket) => {
         const sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         db.query(sql, [username, password], (err, results) => {
             if (err) {
+                console.error("Login DB Error:", err);
                 socket.emit("login_response", { success: false, msg: "Database Error" });
             } else if (results.length > 0) {
                 // Login Success
@@ -88,6 +78,8 @@ io.on("connection", (socket) => {
                     if (recipientSocketId) io.to(recipientSocketId).emit("receive_message", messageData);
                     if (senderSocketId) io.to(senderSocketId).emit("receive_message", messageData);
                 }
+            } else {
+                console.error("Chat Insert Error:", err);
             }
         });
     });
@@ -112,6 +104,7 @@ io.on("connection", (socket) => {
     });
 });
 
-server.listen(3000, () => {
-    console.log("Server running on port 3000...");
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}...`);
 });
