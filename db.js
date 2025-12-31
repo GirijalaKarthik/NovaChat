@@ -20,7 +20,7 @@ if (process.env.DB_URL) {
     pool = mysql.createPool({
         host: 'localhost',
         user: 'root',
-        password: 'tiger',
+        password: '',
         database: 'studentdb',
         waitForConnections: true,
         connectionLimit: 10,
