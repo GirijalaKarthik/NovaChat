@@ -3,19 +3,21 @@ const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
 
-// 👇 THIS IS THE FIX: Import the connection from db.js
+// Import connection from db.js
 const db = require("./db"); 
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static("public"));
+// 👇 FIX 1: Use "Public" with a Capital P (Matches your folder)
+app.use(express.static("Public"));
 
 let onlineUsers = {}; 
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "chat.html"));
+    // 👇 FIX 2: Point to Public/Index.html (Matches your file)
+    res.sendFile(path.join(__dirname, "Public", "Index.html"));
 });
 
 io.on("connection", (socket) => {
@@ -29,13 +31,11 @@ io.on("connection", (socket) => {
                 console.error("Login DB Error:", err);
                 socket.emit("login_response", { success: false, msg: "Database Error" });
             } else if (results.length > 0) {
-                // Login Success
                 onlineUsers[username] = socket.id;
                 socket.username = username;
                 socket.emit("login_response", { success: true });
                 io.emit("update_user_list", Object.keys(onlineUsers));
                 
-                // Load Public History
                 db.query("SELECT * FROM chats WHERE type='public' ORDER BY id ASC", (err, chats) => {
                     if (!err) socket.emit("load_messages", chats);
                 });
@@ -78,8 +78,6 @@ io.on("connection", (socket) => {
                     if (recipientSocketId) io.to(recipientSocketId).emit("receive_message", messageData);
                     if (senderSocketId) io.to(senderSocketId).emit("receive_message", messageData);
                 }
-            } else {
-                console.error("Chat Insert Error:", err);
             }
         });
     });
