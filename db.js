@@ -3,40 +3,36 @@ require('dotenv').config();
 
 let pool;
 
-// 1. Setup Connection
+// 1. Connection Setup
 if (process.env.DB_URL) {
     console.log("☁️ Connecting to Cloud Database...");
     pool = mysql.createPool({
         uri: process.env.DB_URL,
         waitForConnections: true,
         connectionLimit: 5,
-        multipleStatements: true, // Critical for running multiple queries!
+        multipleStatements: true,
         ssl: { rejectUnauthorized: false }
     });
 } else {
     console.log("💻 Connecting to Localhost...");
     pool = mysql.createPool({
-        host: 'localhost',
-        user: 'root',
-        password: '',
-        database: 'studentdb',
-        waitForConnections: true,
-        connectionLimit: 5,
-        multipleStatements: true
+        host: 'localhost', user: 'root', password: '', database: 'studentdb',
+        waitForConnections: true, connectionLimit: 5, multipleStatements: true
     });
 }
 
-// 2. The "Auto-Upgrade" Function
 const promisePool = pool.promise();
 
+// 2. The Auto-Setup Function
 async function initDB() {
     try {
-        // A. Basic Tables
+        // A. Create Tables
         await promisePool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 username VARCHAR(255) NOT NULL,
-                password VARCHAR(255) NOT NULL
+                password VARCHAR(255) NOT NULL,
+                role ENUM('admin', 'student') DEFAULT 'student'
             );
             CREATE TABLE IF NOT EXISTS chats (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -48,52 +44,28 @@ async function initDB() {
             );
         `);
 
-        // B. Add Roles (Admin/Student)
-        try {
-            await promisePool.query("ALTER TABLE users ADD COLUMN role ENUM('admin', 'student') DEFAULT 'student'");
-            console.log("✅ Database Upgraded: Added 'role' column.");
-        } catch (err) {
-            // Ignore error if column already exists
+        // B. 👑 INJECT ADMINS (The New Part)
+        // We check if Hod@mca exists first to avoid duplicates
+        const [users] = await promisePool.query("SELECT * FROM users WHERE username = 'Hod@mca'");
+        
+        if (users.length === 0) {
+            console.log("⚡ Injecting Admin Accounts...");
+            await promisePool.query(`
+                INSERT INTO users (username, password, role) VALUES 
+                ('Hod@mca', 'novachat@123', 'admin'),
+                ('Hod@btech', 'novachat@123', 'admin'),
+                ('Hod@pharmacy', 'novachat@123', 'admin'),
+                ('Hod@degree', 'novachat@123', 'admin');
+            `);
+            console.log("✅ Success! 4 HODs created.");
+        } else {
+            console.log("🛡️ Admins already exist. Skipping injection.");
         }
 
-        // C. Create Group & File Tables
-        await promisePool.query(`
-            CREATE TABLE IF NOT EXISTS groups (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL UNIQUE,
-                description TEXT,
-                created_by INT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            CREATE TABLE IF NOT EXISTS group_members (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                user_id INT,
-                group_id INT,
-                joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(user_id, group_id)
-            );
-            CREATE TABLE IF NOT EXISTS files (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                group_id INT,
-                uploader_id INT,
-                file_name VARCHAR(255),
-                file_url TEXT,
-                uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-        console.log("✅ Group & File Tables Checked.");
-
-        // D. Promote YOU to Admin (Run every time just in case)
-        // 👇👇 CHANGE 'Deva' TO YOUR USERNAME IF NEEDED 👇👇
-        const [result] = await promisePool.query("UPDATE users SET role = 'admin' WHERE username = 'Deva'");
-        if (result.affectedRows > 0) console.log("👑 Admin Check: User 'Deva' is an Admin.");
-
     } catch (err) {
-        console.error("❌ Database Init Error:", err.message);
+        console.error("❌ Database Error:", err.message);
     }
 }
 
-// Run the upgrade instantly
 initDB();
-
 module.exports = pool;
