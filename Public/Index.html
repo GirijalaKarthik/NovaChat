@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NovaChat - Secure Login</title>
+    <title>NovaChat</title>
     <style>
-        /* --- GLOBAL & BODY --- */
+        /* --- 1. THE PITCH BLACK THEME --- */
         body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #000; /* Pitch Black */
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: #050505; /* Pitch Black */
             color: white; 
             display: flex; 
             justify-content: center; 
@@ -17,126 +17,117 @@
             margin: 0; 
         }
 
-        /* --- LOGIN CARD --- */
         #app { 
             width: 360px; 
-            background: #0c0c0c; /* Very dark grey/black */
+            background: #0f0f0f; /* Dark Grey Card */
             padding: 40px; 
-            border-radius: 25px; 
-            border: 1px solid #222; /* Subtle border */
+            border-radius: 20px; 
+            border: 1px solid #222;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5); 
             text-align: center;
         }
 
-        /* --- LOGO (Meteor + NovaChat) --- */
+        /* --- 2. LOGO (GOLD & BOLD) --- */
         h2 { 
-            color: #ffd700; 
-            margin: 0 0 25px 0; 
-            font-size: 34px; 
-            font-weight: 700; /* Clean Bold */
+            color: #ffd700; /* Pure Gold */
+            margin-bottom: 30px; 
+            font-size: 32px; 
+            font-weight: 800; /* Extra Bold */
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            letter-spacing: 0.5px;
+            gap: 10px;
+            letter-spacing: 1px;
         }
         
-        .logo-icon { 
-            font-size: 36px; 
-            /* MAGIC FILTER: Turns the default blue meteor into GOLD/ORANGE */
-            filter: sepia(100%) saturate(200%) hue-rotate(330deg) brightness(95%);
-        }
+        /* No filters, just big size */
+        .logo-icon { font-size: 36px; }
 
-        /* --- TOGGLES (Student vs Admin) --- */
+        /* --- 3. TOGGLES (Your Requirement) --- */
         .role-selector {
             display: flex;
             justify-content: center;
-            gap: 25px;
-            margin-bottom: 30px;
+            gap: 20px;
+            margin-bottom: 25px;
             color: #eee;
-            font-size: 16px;
             font-weight: 500;
         }
         .role-selector label { 
             cursor: pointer; 
             display: flex; 
             align-items: center; 
-            gap: 10px;
+            gap: 8px;
         }
         input[type="radio"] { 
-            accent-color: #ffd700; /* Gold radio button */
-            transform: scale(1.3);
+            accent-color: #ffd700; 
+            transform: scale(1.3); 
             cursor: pointer; 
-            margin: 0;
         }
 
-        /* --- INPUT FIELDS (Pill Shape) --- */
+        /* --- 4. INPUTS (Dark & Rounded) --- */
         input[type="text"], input[type="password"] { 
             width: 100%; 
-            padding: 18px 25px; /* Taller inputs */
+            padding: 15px 20px; 
             margin: 10px 0; 
-            border-radius: 50px; /* Full Pill Shape */
+            border-radius: 30px; 
             border: none; 
-            background: #1c1c1c; 
+            background: #1a1a1a; 
             color: white; 
             font-size: 16px;
             box-sizing: border-box; 
             outline: none;
         }
-        input::placeholder { color: #777; font-weight: 400; }
-        input:focus { background: #252525; }
+        input:focus { background: #222; box-shadow: 0 0 0 1px #ffd700; }
 
-        /* --- LAUNCH BUTTON (Exact Match) --- */
+        /* --- 5. THE BUTTON (CRITICAL FIX) --- */
         .btn-primary { 
             width: 100%; 
-            padding: 18px; 
+            padding: 16px; 
             margin-top: 25px; 
-            border-radius: 50px; 
+            border-radius: 30px; 
             border: none; 
             font-size: 18px; 
-            font-weight: 900; /* Ultra Bold */
+            font-weight: 900; /* ULTRA BOLD */
             cursor: pointer; 
-            background: #ffd700; /* The exact gold */
-            color: black;
-            /* The exact glow */
-            box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            transition: 0.2s;
+            
+            /* THIS IS THE KEY: BLACK TEXT ON GOLD */
+            background: #ffd700; 
+            color: black; 
+            
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); /* The Glow */
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .btn-primary:hover { 
             transform: scale(1.02); 
-            box-shadow: 0 0 35px rgba(255, 215, 0, 0.7);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); 
         }
-        .btn-icon { font-size: 22px; }
 
-        /* --- SECONDARY BUTTON --- */
         .btn-secondary {
             width: 100%;
             padding: 15px;
             margin-top: 15px;
-            border-radius: 50px;
+            border-radius: 30px;
             background: transparent;
             border: 1px solid #444;
-            color: #ccc;
-            font-size: 16px;
-            font-weight: 600;
+            color: #bbb;
+            font-size: 14px;
             cursor: pointer;
         }
-        .btn-secondary:hover { border-color: #777; color: #fff; }
+        .btn-secondary:hover { border-color: white; color: white; }
 
-        /* --- CHAT UI (Hidden initially) --- */
+        /* --- CHAT AREA --- */
         #chat-screen { display: none; flex-direction: column; height: 600px; }
         #chat-box { flex: 1; overflow-y: auto; padding: 20px; background: #111; border-radius: 15px; margin-bottom: 20px; border: 1px solid #222; }
         
-        .message { padding: 10px 18px; margin: 8px 0; border-radius: 25px; max-width: 75%; font-size: 15px; line-height: 1.4; }
-        .sent { background: #ffd700; color: black; align-self: flex-end; border-bottom-right-radius: 4px; font-weight: 500;}
-        .received { background: #2c2c2c; color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .message { padding: 10px 15px; margin: 8px 0; border-radius: 20px; max-width: 80%; font-size: 15px; }
+        .sent { background: #ffd700; color: black; align-self: flex-end; font-weight: 500;}
+        .received { background: #222; color: white; align-self: flex-start; }
         
-        #admin-panel { display: none; background: #1a1a1a; padding: 15px 20px; margin-bottom: 20px; border-radius: 12px; border-left: 5px solid #ffd700; text-align: left; }
-        .chat-input-area { display: flex; gap: 15px; }
-        .send-btn { width: 55px; height: 55px; border-radius: 50%; padding: 0; font-size: 24px; display: flex; justify-content: center; align-items: center; margin: 0; box-shadow: none; }
+        #admin-panel { display: none; background: #1a1a1a; padding: 15px; margin-bottom: 20px; border-left: 5px solid #ffd700; text-align: left; border-radius: 8px;}
+        
+        .chat-input-area { display: flex; gap: 10px; }
+        .send-btn { width: 55px; height: 55px; border-radius: 50%; border: none; background: #ffd700; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; color: black;}
 
     </style>
 </head>
@@ -147,37 +138,28 @@
         <h2><span class="logo-icon">☄️</span> NovaChat</h2>
         
         <div class="role-selector">
-            <label>
-                <input type="radio" name="role" value="student" checked onchange="togglePlaceholder()"> 
-                Student
-            </label>
-            <label>
-                <input type="radio" name="role" value="admin" onchange="togglePlaceholder()"> 
-                Admin
-            </label>
+            <label><input type="radio" name="role" value="student" checked onchange="togglePlaceholder()"> Student</label>
+            <label><input type="radio" name="role" value="admin" onchange="togglePlaceholder()"> Admin</label>
         </div>
 
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
         
-        <button id="login-btn" class="btn-primary" onclick="login()">
-            LAUNCH <span class="btn-icon">🚀</span>
-        </button>
+        <button id="login-btn" class="btn-primary" onclick="login()">LAUNCH 🚀</button>
         <button class="btn-secondary" onclick="register()">Create Account</button>
     </div>
 
     <div id="chat-screen">
         <div id="admin-panel">
             <h3 style="color: #ffd700; margin: 0; font-size: 18px;">👑 Admin Controls</h3>
-            <p style="color: #aaa; font-size: 13px; margin: 5px 0 10px 0;">Post official announcements here.</p>
-            <button onclick="createGroup()" style="background:#ffd700; color:black; border:none; padding:8px 15px; border-radius:30px; font-weight:bold; cursor:pointer;">+ New Notice Board</button>
+            <button onclick="createGroup()" style="background:#ffd700; color:black; border:none; padding:8px 15px; border-radius:30px; margin-top:10px; font-weight:bold; cursor:pointer;">+ New Notice Board</button>
         </div>
 
         <div id="chat-box"></div>
         
         <div class="chat-input-area">
             <input type="text" id="message" placeholder="Type a message..." style="margin:0;">
-            <button class="btn-primary send-btn" onclick="sendMessage()">➤</button>
+            <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
         <p style="font-size: 12px; color: #555; margin-top: 15px;">Secure Connection • <span id="user-count">0</span> Online</p>
     </div>
@@ -195,20 +177,14 @@
         else input.placeholder = "Student Name";
     }
 
-    // --- LOGIN ---
     function login() {
         username = document.getElementById("username").value;
         const pass = document.getElementById("password").value;
         const btn = document.getElementById("login-btn");
 
         if (username && pass) {
-            if (!socket.connected) {
-                alert("⚠️ Server Disconnected! Please reload.");
-                return;
-            }
-            // Keep icon while loading
-            btn.innerHTML = 'Connecting... <span class="btn-icon">🚀</span>'; 
-            btn.style.opacity = "0.8";
+            btn.innerHTML = "CONNECTING..."; 
+            btn.style.opacity = "0.7";
             socket.emit("login_request", { username, password: pass });
         } else {
             alert("Please enter both Username and Password!");
@@ -219,23 +195,16 @@
         const user = document.getElementById("username").value;
         const pass = document.getElementById("password").value;
         if (user && pass) socket.emit("register_request", { username: user, password: pass });
-        else alert("Enter details to create an account.");
     }
 
     socket.on("login_response", (data) => {
-        // Reset button text
-        document.getElementById("login-btn").innerHTML = 'LAUNCH <span class="btn-icon">🚀</span>';
+        document.getElementById("login-btn").innerHTML = "LAUNCH 🚀";
         document.getElementById("login-btn").style.opacity = "1";
 
         if (data.success) {
             document.getElementById("login-screen").style.display = "none";
             document.getElementById("chat-screen").style.display = "flex";
-            
-            if (data.role === 'admin') {
-                document.getElementById("admin-panel").style.display = "block";
-            } else {
-                document.getElementById("admin-panel").style.display = "none";
-            }
+            if (data.role === 'admin') document.getElementById("admin-panel").style.display = "block";
         } else {
             alert(data.msg);
         }
@@ -243,7 +212,6 @@
 
     socket.on("register_response", (data) => alert(data.msg));
 
-    // --- CHAT ---
     function sendMessage() {
         const msg = document.getElementById("message").value;
         if (msg) {
@@ -256,20 +224,16 @@
         const chatBox = document.getElementById("chat-box");
         const msgDiv = document.createElement("div");
         msgDiv.classList.add("message");
-        
         if (data.sender === username) msgDiv.classList.add("sent");
         else msgDiv.classList.add("received");
 
         let displayName = data.sender;
         if (data.isAdmin) {
             displayName = "👑 " + data.sender;
-            // Admin bubbles get a subtle gold border too
             if(data.sender !== username) {
-                 msgDiv.style.border = "2px solid #ffd700";
-                 msgDiv.style.color = "#ffd700";
+                 msgDiv.style.border = "1px solid #ffd700";
             }
         }
-
         msgDiv.innerHTML = `<strong>${displayName}:</strong><br>${data.msg}`;
         chatBox.appendChild(msgDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -286,9 +250,7 @@
         });
     });
 
-    socket.on("update_user_list", (users) => {
-        document.getElementById("user-count").innerText = users.length;
-    });
+    socket.on("update_user_list", (users) => document.getElementById("user-count").innerText = users.length);
 
     function createGroup() {
         const groupName = prompt("Enter Notice Board Name:");
