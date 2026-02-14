@@ -1,30 +1,51 @@
 const mysql = require('mysql2');
 require('dotenv').config();
 
-// Create the connection pool using your Aiven URL
-const pool = mysql.createPool({
-    uri: process.env.DB_URL,
-    ssl: { rejectUnauthorized: false },
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
+let pool;
 
-const promisePool = pool.promise();
+if (process.env.DB_URL) {
+    console.log("☁️ Connecting to Cloud Database (Pool)...");
+    pool = mysql.createPool({
+        uri: process.env.DB_URL,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        multipleStatements: true,  // 👈 THIS FIXES THE TABLE CREATION ERROR
+        ssl: {
+            rejectUnauthorized: false
+        }
+    });
+} else {
+    console.log("💻 Connecting to Localhost...");
+    pool = mysql.createPool({
+        host: 'localhost',
+        user: 'root',
+        password: '',
+        database: 'studentdb',
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        multipleStatements: true // 👈 Added here too just in case
+    });
+}
 
-// We wrap the SQL in backticks (`) so JavaScript treats it as a string
-async function initDB() {
-    try {
-        await promisePool.query(`
+// Auto-Create Tables (Split into separate queries to be safe)
+pool.getConnection((err, connection) => {
+    if (err) {
+        console.error('❌ Database Connection Failed:', err.message);
+    } else {
+        console.log('✅ Connected to MySQL Database!');
+        
+        // Query 1: Create Users Table
+        const userTable = `
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(255) NOT NULL UNIQUE,
-                password VARCHAR(255) NOT NULL,
-                role ENUM('admin', 'student') DEFAULT 'student'
-            )
-        `);
+                username VARCHAR(255) NOT NULL,
+                password VARCHAR(255) NOT NULL
+            )`;
 
-        await promisePool.query(`
+        // Query 2: Create Chats Table
+        const chatTable = `
             CREATE TABLE IF NOT EXISTS chats (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 sender_name VARCHAR(255),
@@ -32,14 +53,20 @@ async function initDB() {
                 to_user VARCHAR(255) DEFAULT 'Everyone',
                 type VARCHAR(50) DEFAULT 'public',
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-        console.log("✅ Tables verified/created successfully.");
-    } catch (err) {
-        console.error("❌ Database initialization failed:", err.message);
-    }
-}
+            )`;
 
-initDB();
+        connection.query(userTable, (err) => {
+            if (err) console.error("❌ User Table Error:", err.message);
+            else {
+                console.log("✅ Users Table Checked!");
+                connection.query(chatTable, (err) => {
+                    if (err) console.error("❌ Chat Table Error:", err.message);
+                    else console.log("✅ Chats Table Checked!");
+                    connection.release();
+                });
+            }
+        });
+    }
+});
 
 module.exports = pool;
