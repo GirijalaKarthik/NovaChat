@@ -9,67 +9,69 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// 1. Serve the 'Public' folder
 app.use(express.static("Public"));
 
-// 2. FORCE THE SERVER TO LOAD YOUR SPECIFIC FILE
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "Public", "Index.html"));
 });
 
-let onlineUsers = [];
-let groups = []; 
+let onlineUsers = {}; 
 
 io.on("connection", (socket) => {
     
-    // LOGIN
     socket.on("login_request", (data) => {
         const sql = "SELECT * FROM users WHERE username = ? AND password = ?";
         db.query(sql, [data.username, data.password], (err, results) => {
             if (!err && results.length > 0) {
                 const user = results[0];
                 socket.username = user.username;
-                socket.role = user.role; 
+                socket.role = user.role;
+                onlineUsers[user.username] = socket.id; // Map username to socket ID for private chat
                 
-                if(!onlineUsers.includes(user.username)) onlineUsers.push(user.username);
-                
-                socket.emit("login_response", { success: true, role: user.role });
-                io.emit("update_lists", { users: onlineUsers, groups: groups });
+                socket.emit("login_response", { success: true, role: user.role, username: user.username });
+                io.emit("update_user_list", Object.keys(onlineUsers));
             } else {
                 socket.emit("login_response", { success: false, msg: "Invalid Credentials" });
             }
         });
     });
 
-    // REGISTER
-    socket.on("register_request", (data) => {
-        const sql = "INSERT INTO users (username, password, role) VALUES (?, ?, 'student')";
-        db.query(sql, [data.username, data.password], (err) => {
-            if (err) socket.emit("register_response", { msg: "Username Taken" });
-            else socket.emit("register_response", { msg: "Success! Login now." });
+    socket.on("send_message", (data) => {
+        const { sender, msg, toUser, type } = data;
+        const sql = "INSERT INTO chats (sender_name, message, to_user, type) VALUES (?, ?, ?, ?)";
+        db.query(sql, [sender, msg, toUser, type], (err, result) => {
+            if (!err) {
+                const messageData = { id: result.insertId, sender, msg, toUser, type, role: socket.role };
+                if (type === 'private') {
+                    // Send only to sender and recipient
+                    if (onlineUsers[toUser]) io.to(onlineUsers[toUser]).emit("receive_message", messageData);
+                    socket.emit("receive_message", messageData);
+                } else {
+                    // Send to everyone for the public Bvrc group
+                    io.emit("receive_message", messageData);
+                }
+            }
         });
     });
 
-    // CREATE GROUP
-    socket.on("create_group", (data) => {
-        if(socket.role === 'admin') {
-            groups.push({ name: data.name, limit: data.limit, creator: socket.username });
-            io.emit("update_lists", { users: onlineUsers, groups: groups });
-        }
+    // --- RESTORED DELETE & CLEAR ---
+    socket.on("delete_message", (id) => {
+        db.query("DELETE FROM chats WHERE id = ?", [id], (err) => {
+            if (!err) io.emit("message_deleted", id);
+        });
     });
 
-    // SEND MESSAGE
-    socket.on("send_message", (data) => {
-        if(data.type === 'group' && socket.role !== 'admin') {
-            return; 
-        }
-        io.emit("receive_message", data); 
+    socket.on("clear_all_chat", () => {
+        db.query("DELETE FROM chats", (err) => {
+            if (!err) io.emit("chat_cleared");
+        });
     });
 
-    // DISCONNECT
     socket.on("disconnect", () => {
-        onlineUsers = onlineUsers.filter(u => u !== socket.username);
-        io.emit("update_lists", { users: onlineUsers, groups: groups });
+        if (socket.username) {
+            delete onlineUsers[socket.username];
+            io.emit("update_user_list", Object.keys(onlineUsers));
+        }
     });
 });
 

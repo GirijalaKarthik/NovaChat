@@ -2,242 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NovaChat Gold</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- 1. GLOBAL SETTINGS (Dark Luxury Theme) --- */
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background: #050505; /* Ultra Dark Background */
-            color: white;
-            margin: 0; padding: 0;
-            position: fixed; 
-            top: 0; left: 0; right: 0; bottom: 0;
-        }
-
-        /* --- LOGIN SCREEN --- */
-        #login-screen { 
-            display: flex; align-items: center; justify-content: center; 
-            width: 100%; height: 100%; 
-            position: absolute; z-index: 1000; background: #050505; 
-        }
-        
-        .login-card { 
-            background: rgba(20, 20, 20, 0.95);
-            border: 1px solid rgba(255, 215, 0, 0.2); /* Subtle Gold Border */
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
-            padding: 30px; border-radius: 20px; 
-            width: 90%; max-width: 400px; 
-            text-align: center;
-        }
-        
-        .login-card input {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);
-            color: white; padding: 15px 25px; border-radius: 50px; 
-            width: 100%; outline: none; margin-bottom: 15px; transition: 0.3s;
-        }
-        .login-card input:focus { border-color: #FFD700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
-
-        .login-btn { 
-            background: linear-gradient(135deg, #FFD700, #FFA500); 
-            border: none; color: #000; padding: 12px; border-radius: 50px; 
-            font-weight: 900; width: 100%; margin-bottom: 10px;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
-        }
-
-        /* --- 2. MAIN APP LAYOUT --- */
-        #app-screen { 
-            display: none; 
-            position: absolute; 
-            top: 0; bottom: 0; left: 0; right: 0;
-            background: transparent; 
-            overflow: hidden;
-            display: flex; 
-            flex-direction: row;
-        }
-        
-        /* --- SIDEBAR --- */
-        .sidebar { 
-            width: 300px; 
-            background: #0a0a0a; 
-            border-right: 1px solid rgba(255,255,255,0.05);
-            display: flex; flex-direction: column; 
-            flex-shrink: 0; 
-        }
-
-        .sidebar-header { 
-            padding: 25px; 
-            border-bottom: 1px solid rgba(255, 215, 0, 0.1); 
-            white-space: nowrap; 
-            overflow: hidden;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        
-        .list-group-item { 
-            background: transparent; color: rgba(255,255,255,0.6); 
-            border: none; padding: 15px 20px; cursor: pointer; display: flex; align-items: center;
-            position: relative; transition: 0.2s;
-        }
-        .list-group-item:hover { background: rgba(255, 215, 0, 0.1); color: #FFD700; }
-        
-        .list-group-item.active-chat { 
-            background: linear-gradient(90deg, #FFD700, #FFA500) !important; 
-            color: black !important; font-weight: bold;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-        }
-
-        /* --- CHAT AREA --- */
-        .chat-area { 
-            flex: 1; min-width: 0; 
-            display: flex; flex-direction: column; height: 100%; 
-        }
-        
-        .chat-header { 
-            background: #0a0a0a;
-            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-            padding: 0 15px; height: 60px; 
-            display: flex; align-items: center; justify-content: space-between; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
-            color: #FFD700;
-            flex-shrink: 0; z-index: 10;
-        }
-
-        /* --- MESSAGES AREA --- */
-        #messages { 
-            flex: 1; list-style: none; padding: 15px; 
-            overflow-y: auto; overflow-x: hidden; 
-            display: flex; flex-direction: column; gap: 15px; 
-        }
-        
-        .message-wrapper { 
-            max-width: 75%; 
-            display: flex; flex-direction: column; position: relative; 
-        }
-
-        .msg-name { font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; margin-left: 12px; opacity: 0.8; }
-        .msg-bubble { padding: 10px 15px; border-radius: 20px; font-size: 0.95rem; word-wrap: break-word; cursor: pointer; }
-
-        .msg-sent { align-self: flex-end; align-items: flex-end; margin-right: 5px; }
-        .msg-sent .msg-bubble { 
-            background: linear-gradient(135deg, #FFD700, #FFA500); 
-            color: black; font-weight: 500;
-            border-bottom-right-radius: 2px; 
-            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
-        }
-        
-        .msg-received { align-self: flex-start; align-items: flex-start; }
-        .msg-received .msg-bubble { background: #222; color: white; border-bottom-left-radius: 2px; border: 1px solid rgba(255,255,255,0.1); cursor: default;}
-
-        /* Admin Tag in Chat */
-        .admin-tag {
-            color: #FFD700; font-size: 0.7rem; font-weight: bold; margin-left: 5px; border: 1px solid #FFD700; padding: 1px 4px; border-radius: 4px;
-        }
-
-        /* --- INPUT AREA --- */
-        .input-area { 
-            background: #0a0a0a; 
-            padding: 10px; display: flex; gap: 10px; align-items: center; 
-            border-top: 1px solid rgba(255,255,255,0.1);
-            flex-shrink: 0; padding-bottom: 15px; 
-        }
-        .input-area input { 
-            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); 
-            color: white; padding: 10px 20px; border-radius: 50px; flex: 1; outline: none; 
-        }
-        .input-area input:focus { border-color: #FFD700; }
-        .input-area input:disabled { background: #111; color: #555; border-color: #333; cursor: not-allowed; }
-
-        .btn-send { 
-            background: linear-gradient(135deg, #FFD700, #FFA500); 
-            color: #000; border: none; width: 40px; height: 40px; 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-        }
-
-        .avatar { 
-            width: 40px; height: 40px; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; margin-right: 15px; 
-            background: rgba(255, 215, 0, 0.1); color: #FFD700;
-            border: 1px solid rgba(255, 215, 0, 0.2); flex-shrink: 0;
-        }
-
-        /* --- CREATE GROUP MODAL --- */
-        #group-modal {
-            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;
-        }
-        .modal-card {
-            background: #111; border: 1px solid #FFD700; padding: 25px; border-radius: 15px; width: 300px;
-        }
-        .modal-card input {
-            background: #222; border: 1px solid #444; color: white; width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px;
-        }
-
-        /* --- 📱 MOBILE --- */
-        @media (max-width: 768px) {
-            .sidebar { width: 70px; } 
-            .sidebar-header h4 span { display: none; } 
-            .sidebar-header small { display: none; }
-            #create-group-btn { display: none; } /* Hide text on mobile */
-            #create-group-icon { display: block !important; }
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: #050505; color: white; margin: 0; overflow: hidden; display: flex; height: 100vh; }
+        .sidebar { width: 300px; background: #0a0a0a; border-right: 1px solid rgba(255,215,0,0.2); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,215,0,0.1); }
+        .chat-area { flex: 1; display: flex; flex-direction: column; background: #000; }
+        .chat-header { background: #0a0a0a; padding: 15px; border-bottom: 1px solid #ffd700; display: flex; justify-content: space-between; align-items: center; }
+        #messages { flex: 1; overflow-y: auto; padding: 20px; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .msg-bubble { padding: 10px 15px; border-radius: 20px; max-width: 70%; position: relative; cursor: pointer; }
+        .msg-sent { align-self: flex-end; background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; font-weight: 500; }
+        .msg-received { align-self: flex-start; background: #222; color: #fff; }
+        .delete-icon { font-size: 12px; color: #ff4d4d; margin-left: 8px; display: none; }
+        .msg-sent:hover .delete-icon { display: inline; }
+        .input-area { padding: 20px; background: #0a0a0a; display: flex; gap: 10px; border-top: 1px solid #222; }
+        .input-area input { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 12px 20px; border-radius: 50px; outline: none; }
+        .list-group-item { background: transparent; color: #aaa; border: none; cursor: pointer; padding: 15px; transition: 0.3s; }
+        .list-group-item:hover, .active-chat { background: rgba(255,215,0,0.1); color: #ffd700; }
+        #login-screen { position: fixed; inset: 0; background: #050505; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: #111; padding: 40px; border-radius: 20px; border: 1px solid #ffd700; text-align: center; width: 350px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-card">
-            <h2 class="fw-bold mb-4" style="color: #FFD700;">
-                <i class="fas fa-meteor me-2"></i>NovaChat
-            </h2>
-            <input type="text" id="username" placeholder="Username (e.g. Hod@mca)" autocomplete="off">
-            <input type="password" id="password" placeholder="Password" autocomplete="off">
-            <button onclick="doLogin()" class="btn login-btn">LAUNCH <i class="fas fa-rocket ms-2"></i></button>
-            <button onclick="doRegister()" class="btn btn-outline-light w-100 rounded-pill">Create Account</button>
-            <p id="login-error" class="text-danger mt-3 small fw-bold"></p>
+            <h2 style="color:#ffd700;"><i class="fas fa-meteor"></i> NovaChat</h2>
+            <input type="text" id="username" class="form-control bg-dark text-white mb-3 rounded-pill" placeholder="Username">
+            <input type="password" id="password" class="form-control bg-dark text-white mb-3 rounded-pill" placeholder="Password">
+            <button onclick="login()" class="btn btn-warning w-100 rounded-pill fw-bold">LAUNCH 🚀</button>
         </div>
     </div>
 
-    <div id="app-screen">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <div>
-                    <h4 class="m-0 fw-bold" style="color: #FFD700;"><i class="fas fa-meteor"></i> <span>NovaChat</span></h4>
-                </div>
-                <button id="add-group-btn" onclick="showGroupModal()" style="display:none; background:transparent; border:none; color:#FFD700; font-size:1.2rem;">
-                    <i class="fas fa-plus-circle"></i>
-                </button>
-            </div>
-            <ul id="user-list" class="list-group list-group-flush"></ul>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4 style="color:#ffd700;"><i class="fas fa-meteor"></i> NovaChat</h4>
+            <small id="connected-as" style="color:#888;">Connected as ...</small>
         </div>
-
-        <div class="chat-area">
-            <div class="chat-header" id="main-header">
-                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    <h5 id="chat-title" class="m-0 fw-bold">Public Space</h5>
-                    <small id="chat-status" style="color: rgba(255,255,255,0.5);">Global Chat</small>
-                </div>
-            </div>
-            
-            <ul id="messages"></ul>
-            
-            <div class="input-area">
-                <input type="text" id="message-input" placeholder="Message..." onkeypress="handleEnter(event)">
-                <button class="btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
+        <ul id="user-list" class="list-group"></ul>
     </div>
 
-    <div id="group-modal">
-        <div class="modal-card">
-            <h4 style="color:#FFD700;">Create Notice Board</h4>
-            <input type="text" id="group-name" placeholder="Group Name (e.g. MCA Notices)">
-            <input type="number" id="group-limit" placeholder="Limit Members (e.g. 30)">
-            <button onclick="createGroup()" class="btn login-btn mt-2">Create</button>
-            <button onclick="closeGroupModal()" class="btn btn-secondary w-100 mt-2">Cancel</button>
+    <div class="chat-area">
+        <div class="chat-header">
+            <h5 id="chat-title" class="m-0">Bvrc</h5>
+            <button class="btn btn-sm btn-outline-danger rounded-pill" onclick="clearHistory()"><i class="fas fa-trash"></i> Clear History</button>
+        </div>
+        <ul id="messages"></ul>
+        <div class="input-area">
+            <input type="text" id="message-input" placeholder="Message..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="btn btn-warning rounded-circle" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -245,175 +61,75 @@
     <script>
         const socket = io();
         let myName = "";
-        let myRole = "student"; 
-        let currentRecipient = "Everyone"; 
-        let currentGroupType = "public"; // 'public', 'private', 'group'
+        let currentChat = "Bvrc";
+        let chatType = "public";
 
-        // --- LOGIN ---
-        function doLogin() {
-            const user = document.getElementById("username").value.trim();
-            const pass = document.getElementById("password").value.trim();
+        function login() {
+            const user = document.getElementById("username").value;
+            const pass = document.getElementById("password").value;
             if(user && pass) {
                 myName = user;
                 socket.emit("login_request", { username: user, password: pass });
             }
         }
 
-        function doRegister() {
-            const user = document.getElementById("username").value.trim();
-            const pass = document.getElementById("password").value.trim();
-            if(user && pass) socket.emit("register_request", { username: user, password: pass });
-        }
-
         socket.on("login_response", (data) => {
             if(data.success) {
-                myRole = data.role; // Capture Role
                 document.getElementById("login-screen").style.display = "none";
-                document.getElementById("app-screen").style.display = "flex"; 
-                document.getElementById("app-screen").style.display = "flex"; 
-                
-                // Show Add Button if Admin
-                if(myRole === 'admin') {
-                    document.getElementById("add-group-btn").style.display = "block";
-                }
-            } else {
-                document.getElementById("login-error").innerText = data.msg;
-            }
+                document.getElementById("connected-as").innerText = "Connected as " + myName;
+                switchChat("Bvrc", "public");
+            } else { alert(data.msg); }
         });
 
-        // --- GROUP LOGIC ---
-        function showGroupModal() { document.getElementById("group-modal").style.display = "flex"; }
-        function closeGroupModal() { document.getElementById("group-modal").style.display = "none"; }
-
-        function createGroup() {
-            const name = document.getElementById("group-name").value;
-            const limit = document.getElementById("group-limit").value || 30;
-            if(name) {
-                socket.emit("create_group", { name, limit, creator: myName });
-                closeGroupModal();
-            }
-        }
-
-        // --- CHAT SWITCHING ---
         function switchChat(target, type) {
-            currentRecipient = target;
-            currentGroupType = type;
-            document.getElementById("messages").innerHTML = ""; // Clear view
-            
-            // Update Header
+            currentChat = target;
+            chatType = type;
             document.getElementById("chat-title").innerText = target;
-            
-            const input = document.getElementById("message-input");
-
-            // READ ONLY LOGIC
-            if(type === 'group') {
-                document.getElementById("chat-status").innerText = "📢 Official Group";
-                // If I am NOT admin, disable input
-                if(myRole !== 'admin') {
-                    input.disabled = true;
-                    input.placeholder = "🔒 Read Only Channel (Admin Only)";
-                } else {
-                    input.disabled = false;
-                    input.placeholder = "Broadcast a message...";
-                }
-            } else {
-                document.getElementById("chat-status").innerText = "Active";
-                input.disabled = false;
-                input.placeholder = "Message...";
-            }
-
-            // Highlight Active
+            document.getElementById("messages").innerHTML = "";
+            // Reset active classes
             document.querySelectorAll(".list-group-item").forEach(el => el.classList.remove("active-chat"));
-            const activeItem = document.getElementById("user-" + target.replace(/\s/g, ''));
-            if(activeItem) activeItem.classList.add("active-chat");
-
-            // Ask server for messages
-            socket.emit("fetch_chat_history", { target, type });
+            const active = document.getElementById("user-" + target);
+            if(active) active.classList.add("active-chat");
         }
 
-        // --- SENDING ---
         function sendMessage() {
             const input = document.getElementById("message-input");
-            if (input.value.trim() !== "") {
-                socket.emit("send_message", { 
-                    sender: myName, 
-                    msg: input.value, 
-                    toUser: currentRecipient,
-                    type: currentGroupType,
-                    role: myRole
-                });
+            if(input.value.trim()) {
+                socket.emit("send_message", { sender: myName, msg: input.value, toUser: currentChat, type: chatType });
                 input.value = "";
             }
         }
-        function handleEnter(e) { if(e.key === "Enter") sendMessage(); }
 
-        // --- RECEIVING ---
         socket.on("receive_message", (data) => {
-            // Only show if it belongs to current chat
-            if(data.toUser === currentRecipient || (data.toUser === "Everyone" && currentRecipient === "Everyone")) {
-                addMessageToDOM(data);
-            }
+            if (data.type === 'public' && currentChat === 'Bvrc') addMsg(data);
+            else if (data.type === 'private' && (data.sender === currentChat || data.sender === myName)) addMsg(data);
         });
 
-        socket.on("chat_history", (msgs) => {
-            const list = document.getElementById("messages");
-            list.innerHTML = "";
-            msgs.forEach(addMessageToDOM);
-        });
-
-        function addMessageToDOM(data) {
+        function addMsg(data) {
             const list = document.getElementById("messages");
             const li = document.createElement("li");
-            li.classList.add("message-wrapper");
-            
-            let adminBadge = data.role === 'admin' ? `<span class="admin-tag">ADMIN</span>` : "";
-            
-            if (data.sender !== myName) {
-                li.classList.add("msg-received");
-                li.innerHTML = `<div class="msg-name">${data.sender} ${adminBadge}</div>
-                                <div class="msg-bubble">${data.msg}</div>`;
-            } else {
-                li.classList.add("msg-sent");
-                li.innerHTML = `<div class="msg-bubble">${data.msg}</div>`;
-            }
+            li.className = `msg-bubble ${data.sender === myName ? 'msg-sent' : 'msg-received'}`;
+            li.innerHTML = `<strong>${data.sender}:</strong> ${data.msg} 
+                ${data.sender === myName ? `<i class="fas fa-times-circle delete-icon" onclick="deleteMsg(${data.id})"></i>` : ""}`;
             list.appendChild(li);
             list.scrollTop = list.scrollHeight;
         }
 
-        // --- USER & GROUP LIST ---
-        socket.on("update_lists", (data) => {
+        function deleteMsg(id) { if(confirm("Delete this message?")) socket.emit("delete_message", id); }
+        function clearHistory() { if(confirm("Clear ALL chat history?")) socket.emit("clear_all_chat"); }
+
+        socket.on("message_deleted", (id) => { location.reload(); });
+        socket.on("chat_cleared", () => { document.getElementById("messages").innerHTML = ""; });
+
+        socket.on("update_user_list", (users) => {
             const list = document.getElementById("user-list");
-            let html = "";
-
-            // 1. Everyone
-            html += `<li class="list-group-item" onclick="switchChat('Everyone', 'public')" id="user-Everyone">
-                        <div class="avatar"><i class="fas fa-globe"></i></div>
-                        <div><div class="fw-bold">Everyone</div></div>
-                     </li>`;
-
-            // 2. Groups
-            data.groups.forEach(g => {
-                html += `<li class="list-group-item" onclick="switchChat('${g.name}', 'group')" id="user-${g.name.replace(/\s/g, '')}">
-                            <div class="avatar" style="border-color:#FFD700;"><i class="fas fa-bullhorn"></i></div>
-                            <div>
-                                <div class="fw-bold">${g.name}</div>
-                                <div style="font-size:0.7rem; color:#888;">Limit: ${g.limit}</div>
-                            </div>
-                         </li>`;
-            });
-
-            // 3. Users
-            data.users.forEach(u => {
+            list.innerHTML = `<li class="list-group-item active-chat" id="user-Bvrc" onclick="switchChat('Bvrc', 'public')"><i class="fas fa-globe"></i> Bvrc</li>`;
+            users.forEach(u => {
                 if(u !== myName) {
-                    html += `<li class="list-group-item" onclick="switchChat('${u}', 'private')" id="user-${u}">
-                                <div class="avatar">${u.charAt(0).toUpperCase()}</div>
-                                <div class="fw-bold">${u}</div>
-                             </li>`;
+                    list.innerHTML += `<li class="list-group-item" id="user-${u}" onclick="switchChat('${u}', 'private')"><i class="fas fa-user"></i> ${u}</li>`;
                 }
             });
-            list.innerHTML = html;
         });
-
     </script>
 </body>
 </html>
