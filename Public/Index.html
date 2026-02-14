@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NovaChat - Secure Link</title>
+    <title>NovaChat - Secure Login</title>
     <style>
-        /* --- 1. GLOBAL STYLES (The Cool Vibe) --- */
+        /* --- GLOBAL & BODY --- */
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #0d0d0d; 
+            background-color: #000; /* Pitch black background like screenshot */
             color: white; 
             display: flex; 
             justify-content: center; 
@@ -17,97 +17,119 @@
             margin: 0; 
         }
 
-        /* --- 2. THE LOGIN CARD (Restored Glow) --- */
+        /* --- LOGIN CARD --- */
         #app { 
-            width: 380px; 
-            background: #161616; 
-            padding: 30px; 
+            width: 350px; 
+            background: #0f0f0f; /* Very dark grey, almost black */
+            padding: 40px; 
             border-radius: 20px; 
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1); 
-            border: 1px solid #333;
+            border: 1px solid #333; /* Subtle border */
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.05); /* Very faint glow */
             text-align: center;
         }
 
-        /* LOGO AREA */
+        /* --- LOGO (Meteor + NovaChat) --- */
         h2 { 
             color: #ffd700; 
-            margin-bottom: 20px; 
-            font-size: 28px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            margin-bottom: 25px; 
+            font-size: 32px; 
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
-        .logo-icon { font-size: 30px; vertical-align: middle; }
-
-        /* --- 3. INPUT FIELDS (Rounded & Dark) --- */
-        input { 
-            width: 90%; 
-            padding: 15px; 
-            margin: 10px 0; 
-            border-radius: 30px; 
-            border: 1px solid #333; 
-            background: #222; 
-            color: white; 
-            font-size: 16px;
-            outline: none;
-            transition: 0.3s;
+        .logo-icon { 
+            font-size: 32px; 
+            /* This filter makes the meteor look Golden/Yellow if it renders blue on some devices */
+            filter: sepia(100%) saturate(1000%) hue-rotate(350deg); 
         }
-        input:focus { border-color: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
 
-        /* --- 4. BUTTONS (The "Launch" Style) --- */
-        button { 
-            width: 100%; 
-            padding: 15px; 
-            margin-top: 10px; 
-            border-radius: 30px; 
-            border: none; 
-            font-size: 16px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            transition: 0.3s;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(45deg, #ffd700, #ffaa00);
-            color: black;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-        }
-        .btn-primary:hover { transform: scale(1.02); box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6); }
-
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid #555;
-            color: #aaa;
-            margin-top: 15px;
-        }
-        .btn-secondary:hover { border-color: white; color: white; }
-
-        /* --- 5. CHECKBOXES (User vs Admin) --- */
+        /* --- TOGGLES (Student vs Admin) --- */
         .role-selector {
             display: flex;
             justify-content: center;
             gap: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             color: #ccc;
+            font-size: 14px;
         }
-        .role-selector label { cursor: pointer; display: flex; align-items: center; gap: 8px;}
-        input[type="radio"] { width: auto; margin: 0; accent-color: #ffd700; cursor: pointer; }
+        .role-selector label { 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+        }
+        input[type="radio"] { 
+            accent-color: #ffd700; /* Gold radio button */
+            transform: scale(1.2);
+            cursor: pointer; 
+        }
 
-        /* --- 6. CHAT & ADMIN UI --- */
+        /* --- INPUT FIELDS (Pill Shape) --- */
+        input[type="text"], input[type="password"] { 
+            width: 100%; 
+            padding: 15px 20px; 
+            margin: 8px 0; 
+            border-radius: 50px; /* Full Pill Shape */
+            border: none; 
+            background: #1a1a1a; 
+            color: white; 
+            font-size: 15px;
+            box-sizing: border-box; /* Fix padding issues */
+            outline: none;
+        }
+        input::placeholder { color: #666; }
+        input:focus { background: #222; box-shadow: 0 0 0 2px #333; }
+
+        /* --- LAUNCH BUTTON (Bold & Glowing) --- */
+        .btn-primary { 
+            width: 100%; 
+            padding: 15px; 
+            margin-top: 20px; 
+            border-radius: 50px; 
+            border: none; 
+            font-size: 18px; 
+            font-weight: 900; /* Extra Bold like screenshot */
+            cursor: pointer; 
+            background: #ffd700;
+            color: black;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); /* The Glow */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.2s;
+        }
+        .btn-primary:hover { 
+            transform: scale(1.02); 
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+        }
+
+        /* --- SECONDARY BUTTON --- */
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            border-radius: 50px;
+            background: transparent;
+            border: 1px solid #444;
+            color: #eee;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-secondary:hover { border-color: #fff; }
+
+        /* --- CHAT UI (Hidden initially) --- */
         #chat-screen { display: none; flex-direction: column; height: 550px; }
-        #chat-box { flex: 1; overflow-y: auto; padding: 15px; background: #1a1a1a; border-radius: 10px; margin-bottom: 15px; border: 1px solid #333; }
+        #chat-box { flex: 1; overflow-y: auto; padding: 15px; background: #111; border-radius: 10px; margin-bottom: 15px; border: 1px solid #222; }
         
-        .message { padding: 8px 12px; margin: 8px 0; border-radius: 10px; max-width: 80%; font-size: 14px; line-height: 1.4; }
-        .sent { background: #ffd700; color: black; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 0; }
-        .received { background: #333; color: white; align-self: flex-start; border-bottom-left-radius: 0; }
+        .message { padding: 8px 15px; margin: 5px 0; border-radius: 20px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+        .sent { background: #ffd700; color: black; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .received { background: #222; color: white; align-self: flex-start; border-bottom-left-radius: 2px; }
         
-        /* Gold Admin Panel */
-        #admin-panel { display: none; background: #222; padding: 15px; margin-bottom: 15px; border-radius: 10px; border-left: 5px solid #ffd700; text-align: left; }
-        .admin-btn { background: #ffd700; width: auto; padding: 8px 20px; font-size: 14px; margin-top: 5px; color: black; }
-
-        /* Bottom Bar */
+        #admin-panel { display: none; background: #111; padding: 15px; margin-bottom: 15px; border-radius: 10px; border-left: 4px solid #ffd700; text-align: left; }
         .chat-input-area { display: flex; gap: 10px; }
-        .send-btn { width: 60px; border-radius: 50%; padding: 0; font-size: 20px; display: flex; justify-content: center; align-items: center; }
+        .send-btn { width: 50px; height: 50px; border-radius: 50%; padding: 0; font-size: 20px; display: flex; justify-content: center; align-items: center; margin: 0;}
 
     </style>
 </head>
@@ -115,7 +137,7 @@
 
 <div id="app">
     <div id="login-screen">
-        <h2><span class="logo-icon">🚀</span> NovaChat</h2>
+        <h2><span class="logo-icon">☄️</span> NovaChat</h2>
         
         <div class="role-selector">
             <label>
@@ -128,28 +150,26 @@
             </label>
         </div>
 
-        <input type="text" id="username" placeholder="Enter Username...">
-        <input type="password" id="password" placeholder="Enter Password...">
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
         
-        <button class="btn-primary" onclick="login()">LAUNCH 🚀</button>
+        <button id="login-btn" class="btn-primary" onclick="login()">LAUNCH 🚀</button>
         <button class="btn-secondary" onclick="register()">Create Account</button>
     </div>
 
     <div id="chat-screen">
-        
         <div id="admin-panel">
-            <h3 style="color: #ffd700; margin: 0;">👑 Admin Controls</h3>
-            <p style="font-size: 12px; color: #aaa; margin: 5px 0;">Official Broadcasting Channel</p>
-            <button class="admin-btn" onclick="createGroup()">+ Create Notice Board</button>
+            <h3 style="color: #ffd700; margin: 0; font-size: 16px;">👑 Admin Controls</h3>
+            <button onclick="createGroup()" style="background:#ffd700; color:black; border:none; padding:5px 10px; border-radius:4px; margin-top:5px; font-weight:bold; cursor:pointer;">+ New Notice</button>
         </div>
 
         <div id="chat-box"></div>
         
         <div class="chat-input-area">
             <input type="text" id="message" placeholder="Type a message..." style="margin:0;">
-            <button class="btn-primary send-btn" onclick="sendMessage()" style="margin:0;">➤</button>
+            <button class="btn-primary send-btn" onclick="sendMessage()">➤</button>
         </div>
-        <p style="font-size: 10px; color: #555; margin-top: 10px;">Secure Connection • <span id="user-count">0</span> Online</p>
+        <p style="font-size: 10px; color: #444; margin-top: 10px;">Secure • <span id="user-count">0</span> Online</p>
     </div>
 </div>
 
@@ -158,41 +178,49 @@
     const socket = io();
     let username = "";
 
-    // Toggle Placeholder text based on selection (Visual only)
     function togglePlaceholder() {
         const role = document.querySelector('input[name="role"]:checked').value;
         const input = document.getElementById("username");
-        if(role === 'admin') {
-            input.placeholder = "Enter Admin ID (e.g. Hod@mca)";
-        } else {
-            input.placeholder = "Enter Student Name";
-        }
+        if(role === 'admin') input.placeholder = "Admin ID (e.g. Hod@mca)";
+        else input.placeholder = "Student Name";
     }
 
     // --- LOGIN ---
     function login() {
         username = document.getElementById("username").value;
         const pass = document.getElementById("password").value;
-        if (username && pass) socket.emit("login_request", { username, password: pass });
+        const btn = document.getElementById("login-btn");
+
+        if (username && pass) {
+            if (!socket.connected) {
+                alert("⚠️ Server Disconnected! Please reload.");
+                return;
+            }
+            btn.innerHTML = "Connecting..."; 
+            btn.style.opacity = "0.7";
+            socket.emit("login_request", { username, password: pass });
+        } else {
+            alert("Please enter both Username and Password!");
+        }
     }
 
     function register() {
         const user = document.getElementById("username").value;
         const pass = document.getElementById("password").value;
         if (user && pass) socket.emit("register_request", { username: user, password: pass });
+        else alert("Enter details to create an account.");
     }
 
     socket.on("login_response", (data) => {
+        document.getElementById("login-btn").innerHTML = "LAUNCH 🚀";
+        document.getElementById("login-btn").style.opacity = "1";
+
         if (data.success) {
             document.getElementById("login-screen").style.display = "none";
             document.getElementById("chat-screen").style.display = "flex";
             
-            // 👑 CHECK ROLE & SHOW ADMIN PANEL
             if (data.role === 'admin') {
                 document.getElementById("admin-panel").style.display = "block";
-                // Show visual confirmation
-                const chatBox = document.getElementById("chat-box");
-                chatBox.innerHTML += `<div style="text-align:center; color:#ffd700; margin:10px; font-size:12px;">🔒 Admin Mode Activated</div>`;
             } else {
                 document.getElementById("admin-panel").style.display = "none";
             }
@@ -207,3 +235,51 @@
     function sendMessage() {
         const msg = document.getElementById("message").value;
         if (msg) {
+            socket.emit("send_message", { sender: username, msg });
+            document.getElementById("message").value = "";
+        }
+    }
+
+    socket.on("receive_message", (data) => {
+        const chatBox = document.getElementById("chat-box");
+        const msgDiv = document.createElement("div");
+        msgDiv.classList.add("message");
+        
+        if (data.sender === username) msgDiv.classList.add("sent");
+        else msgDiv.classList.add("received");
+
+        let displayName = data.sender;
+        if (data.isAdmin) {
+            displayName = "👑 " + data.sender;
+            msgDiv.style.border = "1px solid #ffd700";
+        }
+
+        msgDiv.innerHTML = `<strong>${displayName}:</strong> ${data.msg}`;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    socket.on("load_messages", (chats) => {
+        document.getElementById("chat-box").innerHTML = "";
+        chats.forEach(chat => {
+            const msgDiv = document.createElement("div");
+            msgDiv.classList.add("message");
+            msgDiv.classList.add(chat.sender_name === username ? "sent" : "received");
+            msgDiv.innerHTML = `<strong>${chat.sender_name}:</strong> ${chat.message}`;
+            document.getElementById("chat-box").appendChild(msgDiv);
+        });
+    });
+
+    socket.on("update_user_list", (users) => {
+        document.getElementById("user-count").innerText = users.length;
+    });
+
+    function createGroup() {
+        const groupName = prompt("Enter Notice Board Name:");
+        if (groupName) socket.emit("create_group_request", { name: groupName, desc: "Official" });
+    }
+
+    socket.on("group_creation_response", (data) => alert(data.msg));
+</script>
+</body>
+</html>
