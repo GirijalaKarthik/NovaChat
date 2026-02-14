@@ -2,17 +2,23 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
-const db = require("./db"); // Assuming your db.js is set up
+const db = require("./db"); 
 require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// 1. Serve the 'Public' folder
 app.use(express.static("Public"));
 
+// 2. FORCE THE SERVER TO LOAD YOUR SPECIFIC FILE
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "Public", "Index.html"));
+});
+
 let onlineUsers = [];
-let groups = []; // Memory storage for groups (easier for expo demo)
+let groups = []; 
 
 io.on("connection", (socket) => {
     
@@ -23,7 +29,7 @@ io.on("connection", (socket) => {
             if (!err && results.length > 0) {
                 const user = results[0];
                 socket.username = user.username;
-                socket.role = user.role; // 'admin' or 'student'
+                socket.role = user.role; 
                 
                 if(!onlineUsers.includes(user.username)) onlineUsers.push(user.username);
                 
@@ -44,7 +50,7 @@ io.on("connection", (socket) => {
         });
     });
 
-    // CREATE GROUP (Admin Only)
+    // CREATE GROUP
     socket.on("create_group", (data) => {
         if(socket.role === 'admin') {
             groups.push({ name: data.name, limit: data.limit, creator: socket.username });
@@ -54,16 +60,10 @@ io.on("connection", (socket) => {
 
     // SEND MESSAGE
     socket.on("send_message", (data) => {
-        // PERMISSION CHECK: If group, ONLY admin can speak
         if(data.type === 'group' && socket.role !== 'admin') {
-            return; // Block message
+            return; 
         }
-
-        // Broadcast
         io.emit("receive_message", data); 
-        
-        // Optional: Save to DB here if needed
-        // db.query("INSERT INTO chats ...")
     });
 
     // DISCONNECT
@@ -73,4 +73,5 @@ io.on("connection", (socket) => {
     });
 });
 
-server.listen(3000, () => console.log("Server Running on 3000"));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Server Running on Port ${PORT}`));
