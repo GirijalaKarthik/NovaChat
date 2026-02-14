@@ -78,18 +78,6 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on("delete_message", (id) => {
-        db.query("DELETE FROM chats WHERE id = ?", [id], (err) => {
-            if (!err) io.emit("message_deleted", id);
-        });
-    });
-
-    socket.on("clear_all_chat", () => {
-        db.query("DELETE FROM chats", (err) => {
-            if (!err) io.emit("chat_cleared");
-        });
-    });
-
     socket.on("disconnect", () => {
         if (socket.username) {
             delete onlineUsers[socket.username];
