@@ -11,6 +11,7 @@ const io = new Server(server);
 
 app.use(express.static("Public"));
 
+// Force load your specific Index.html to avoid "Cannot GET /" errors
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "Public", "Index.html"));
 });
@@ -26,7 +27,7 @@ io.on("connection", (socket) => {
                 const user = results[0];
                 socket.username = user.username;
                 socket.role = user.role;
-                onlineUsers[user.username] = socket.id; // Map username to socket ID for private chat
+                onlineUsers[user.username] = socket.id; // Map username to unique socket ID
                 
                 socket.emit("login_response", { success: true, role: user.role, username: user.username });
                 io.emit("update_user_list", Object.keys(onlineUsers));
@@ -43,24 +44,24 @@ io.on("connection", (socket) => {
             if (!err) {
                 const messageData = { id: result.insertId, sender, msg, toUser, type, role: socket.role };
                 if (type === 'private') {
-                    // Send only to sender and recipient
+                    // Fix: Transmit privately to the specific recipient and the sender
                     if (onlineUsers[toUser]) io.to(onlineUsers[toUser]).emit("receive_message", messageData);
                     socket.emit("receive_message", messageData);
                 } else {
-                    // Send to everyone for the public Bvrc group
-                    io.emit("receive_message", messageData);
+                    io.emit("receive_message", messageData); // Public broadcast for Bvrc
                 }
             }
         });
     });
 
-    // --- RESTORED DELETE & CLEAR ---
+    // Re-added: Individual message deletion logic
     socket.on("delete_message", (id) => {
         db.query("DELETE FROM chats WHERE id = ?", [id], (err) => {
             if (!err) io.emit("message_deleted", id);
         });
     });
 
+    // Re-added: Full history clearing logic
     socket.on("clear_all_chat", () => {
         db.query("DELETE FROM chats", (err) => {
             if (!err) io.emit("chat_cleared");
@@ -76,4 +77,4 @@ io.on("connection", (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server Running on Port ${PORT}`));
+server.listen(PORT, () => console.log(`Nebula Core Online: Port ${PORT}`));

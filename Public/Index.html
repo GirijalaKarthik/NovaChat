@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NovaChat Gold</title>
+    <title>NovaChat Gold - Nebula Network</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,48 +12,50 @@
         .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,215,0,0.1); }
         .chat-area { flex: 1; display: flex; flex-direction: column; background: #000; }
         .chat-header { background: #0a0a0a; padding: 15px; border-bottom: 1px solid #ffd700; display: flex; justify-content: space-between; align-items: center; }
-        #messages { flex: 1; overflow-y: auto; padding: 20px; list-style: none; display: flex; flex-direction: column; gap: 10px; }
-        .msg-bubble { padding: 10px 15px; border-radius: 20px; max-width: 70%; position: relative; cursor: pointer; }
-        .msg-sent { align-self: flex-end; background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; font-weight: 500; }
-        .msg-received { align-self: flex-start; background: #222; color: #fff; }
-        .delete-icon { font-size: 12px; color: #ff4d4d; margin-left: 8px; display: none; }
-        .msg-sent:hover .delete-icon { display: inline; }
-        .input-area { padding: 20px; background: #0a0a0a; display: flex; gap: 10px; border-top: 1px solid #222; }
-        .input-area input { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 12px 20px; border-radius: 50px; outline: none; }
-        .list-group-item { background: transparent; color: #aaa; border: none; cursor: pointer; padding: 15px; transition: 0.3s; }
+        #messages { flex: 1; overflow-y: auto; padding: 25px; list-style: none; display: flex; flex-direction: column; gap: 15px; }
+        .msg-bubble { padding: 12px 18px; border-radius: 20px; max-width: 65%; position: relative; cursor: pointer; transition: 0.2s; }
+        .msg-sent { align-self: flex-end; background: linear-gradient(135deg, #ffd700, #ffaa00); color: #000; font-weight: 500; border-bottom-right-radius: 4px; }
+        .msg-received { align-self: flex-start; background: #1a1a1a; color: #fff; border-bottom-left-radius: 4px; border: 1px solid #333; }
+        /* Re-added: Individual Delete Logic */
+        .delete-btn { font-size: 14px; color: #ff4d4d; margin-left: 10px; display: none; cursor: pointer; }
+        .msg-sent:hover .delete-btn { display: inline; }
+        .input-area { padding: 20px; background: #0a0a0a; display: flex; gap: 15px; border-top: 1px solid #222; }
+        .input-area input { flex: 1; background: #111; border: 1px solid #333; color: #fff; padding: 14px 25px; border-radius: 50px; outline: none; transition: 0.3s; }
+        .input-area input:focus { border-color: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+        .list-group-item { background: transparent; color: #888; border: none; cursor: pointer; padding: 15px 20px; transition: 0.3s; font-weight: 500; }
         .list-group-item:hover, .active-chat { background: rgba(255,215,0,0.1); color: #ffd700; }
         #login-screen { position: fixed; inset: 0; background: #050505; z-index: 1000; display: flex; align-items: center; justify-content: center; }
-        .login-card { background: #111; padding: 40px; border-radius: 20px; border: 1px solid #ffd700; text-align: center; width: 350px; }
+        .login-card { background: #0c0c0c; padding: 45px; border-radius: 25px; border: 1px solid #ffd700; text-align: center; width: 380px; box-shadow: 0 0 30px rgba(255, 215, 0, 0.1); }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-card">
-            <h2 style="color:#ffd700;"><i class="fas fa-meteor"></i> NovaChat</h2>
-            <input type="text" id="username" class="form-control bg-dark text-white mb-3 rounded-pill" placeholder="Username">
-            <input type="password" id="password" class="form-control bg-dark text-white mb-3 rounded-pill" placeholder="Password">
-            <button onclick="login()" class="btn btn-warning w-100 rounded-pill fw-bold">LAUNCH 🚀</button>
+            <h2 style="color:#ffd700; font-weight: 800; letter-spacing: 1px;"><i class="fas fa-meteor"></i> NovaChat</h2>
+            <input type="text" id="username" class="form-control bg-dark text-white mb-3 rounded-pill p-3 border-0" placeholder="Username">
+            <input type="password" id="password" class="form-control bg-dark text-white mb-4 rounded-pill p-3 border-0" placeholder="Password">
+            <button onclick="login()" class="btn btn-warning w-100 rounded-pill fw-bold p-3">LAUNCH 🚀</button>
         </div>
     </div>
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <h4 style="color:#ffd700;"><i class="fas fa-meteor"></i> NovaChat</h4>
-            <small id="connected-as" style="color:#888;">Connected as ...</small>
+            <h4 style="color:#ffd700; font-weight: 700;"><i class="fas fa-meteor"></i> NovaChat</h4>
+            <small id="connected-as" style="color:#666; font-weight: 600;">Connected as ...</small>
         </div>
         <ul id="user-list" class="list-group"></ul>
     </div>
 
     <div class="chat-area">
         <div class="chat-header">
-            <h5 id="chat-title" class="m-0">Bvrc</h5>
-            <button class="btn btn-sm btn-outline-danger rounded-pill" onclick="clearHistory()"><i class="fas fa-trash"></i> Clear History</button>
+            <h5 id="chat-title" class="m-0 fw-bold" style="color:#ffd700;">Bvrc</h5>
+            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="clearHistory()"><i class="fas fa-trash-alt"></i> Clear History</button>
         </div>
         <ul id="messages"></ul>
         <div class="input-area">
-            <input type="text" id="message-input" placeholder="Message..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button class="btn btn-warning rounded-circle" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            <input type="text" id="message-input" placeholder="Transmit a message..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="btn btn-warning rounded-circle p-3" style="width:55px; height:55px;" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -86,7 +88,6 @@
             chatType = type;
             document.getElementById("chat-title").innerText = target;
             document.getElementById("messages").innerHTML = "";
-            // Reset active classes
             document.querySelectorAll(".list-group-item").forEach(el => el.classList.remove("active-chat"));
             const active = document.getElementById("user-" + target);
             if(active) active.classList.add("active-chat");
@@ -109,24 +110,26 @@
             const list = document.getElementById("messages");
             const li = document.createElement("li");
             li.className = `msg-bubble ${data.sender === myName ? 'msg-sent' : 'msg-received'}`;
-            li.innerHTML = `<strong>${data.sender}:</strong> ${data.msg} 
-                ${data.sender === myName ? `<i class="fas fa-times-circle delete-icon" onclick="deleteMsg(${data.id})"></i>` : ""}`;
+            li.innerHTML = `<strong style="font-size: 11px; display: block; margin-bottom: 4px;">${data.sender}</strong> ${data.msg} 
+                ${data.sender === myName ? `<i class="fas fa-trash delete-btn" onclick="deleteMsg(${data.id})"></i>` : ""}`;
             list.appendChild(li);
             list.scrollTop = list.scrollHeight;
         }
 
-        function deleteMsg(id) { if(confirm("Delete this message?")) socket.emit("delete_message", id); }
-        function clearHistory() { if(confirm("Clear ALL chat history?")) socket.emit("clear_all_chat"); }
+        // Restored: UI logic for deletions
+        function deleteMsg(id) { if(confirm("Permanently delete this message?")) socket.emit("delete_message", id); }
+        function clearHistory() { if(confirm("Purge entire Nebula history?")) socket.emit("clear_all_chat"); }
 
         socket.on("message_deleted", (id) => { location.reload(); });
         socket.on("chat_cleared", () => { document.getElementById("messages").innerHTML = ""; });
 
         socket.on("update_user_list", (users) => {
             const list = document.getElementById("user-list");
-            list.innerHTML = `<li class="list-group-item active-chat" id="user-Bvrc" onclick="switchChat('Bvrc', 'public')"><i class="fas fa-globe"></i> Bvrc</li>`;
+            // Set Bvrc as the primary global access point
+            list.innerHTML = `<li class="list-group-item active-chat" id="user-Bvrc" onclick="switchChat('Bvrc', 'public')"><i class="fas fa-globe me-2"></i> Bvrc Group</li>`;
             users.forEach(u => {
                 if(u !== myName) {
-                    list.innerHTML += `<li class="list-group-item" id="user-${u}" onclick="switchChat('${u}', 'private')"><i class="fas fa-user"></i> ${u}</li>`;
+                    list.innerHTML += `<li class="list-group-item" id="user-${u}" onclick="switchChat('${u}', 'private')"><i class="fas fa-user-shield me-2"></i> ${u}</li>`;
                 }
             });
         });
