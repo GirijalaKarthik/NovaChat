@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NovaChat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
     <style>
-        /* --- 1. THE PITCH BLACK THEME --- */
+        /* --- 1. GLOBAL SETTINGS --- */
         body { 
             font-family: 'Segoe UI', sans-serif; 
-            background-color: #050505; /* Pitch Black */
+            background-color: #050505; 
             color: white; 
             display: flex; 
             justify-content: center; 
@@ -17,9 +19,10 @@
             margin: 0; 
         }
 
-        #app { 
+        /* --- 2. LOGIN SCREEN --- */
+        #login-screen { 
             width: 360px; 
-            background: #0f0f0f; /* Dark Grey Card */
+            background: #0f0f0f; 
             padding: 40px; 
             border-radius: 20px; 
             border: 1px solid #222;
@@ -27,141 +30,143 @@
             text-align: center;
         }
 
-        /* --- 2. LOGO (GOLD & BOLD) --- */
+        /* THE LOGO FIX: Using FontAwesome Icon instead of Emoji */
         h2 { 
-            color: #ffd700; /* Pure Gold */
+            color: #ffd700; 
             margin-bottom: 30px; 
             font-size: 32px; 
-            font-weight: 800; /* Extra Bold */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            font-weight: 800; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 15px; /* More space between icon and text */
             letter-spacing: 1px;
         }
         
-        /* No filters, just big size */
-        .logo-icon { font-size: 36px; }
-
-        /* --- 3. TOGGLES (Your Requirement) --- */
-        .role-selector {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 25px;
-            color: #eee;
-            font-weight: 500;
-        }
-        .role-selector label { 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px;
-        }
-        input[type="radio"] { 
-            accent-color: #ffd700; 
-            transform: scale(1.3); 
-            cursor: pointer; 
+        /* The Icon Style */
+        .logo-icon { 
+            font-size: 32px; 
+            color: #ffd700; 
+            /* Rotates it slightly to match your screenshot */
+            transform: rotate(-10deg); 
         }
 
-        /* --- 4. INPUTS (Dark & Rounded) --- */
-        input[type="text"], input[type="password"] { 
-            width: 100%; 
-            padding: 15px 20px; 
-            margin: 10px 0; 
-            border-radius: 30px; 
-            border: none; 
-            background: #1a1a1a; 
-            color: white; 
-            font-size: 16px;
-            box-sizing: border-box; 
-            outline: none;
-        }
-        input:focus { background: #222; box-shadow: 0 0 0 1px #ffd700; }
+        /* Login Inputs */
+        .role-selector { display: flex; justify-content: center; gap: 20px; margin-bottom: 25px; color: #eee; font-weight: 500; }
+        .role-selector label { cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        input[type="radio"] { accent-color: #ffd700; transform: scale(1.3); cursor: pointer; }
 
-        /* --- 5. THE BUTTON (CRITICAL FIX) --- */
+        .login-input { 
+            width: 100%; padding: 15px 20px; margin: 10px 0; border-radius: 30px; 
+            border: none; background: #1a1a1a; color: white; font-size: 16px; 
+            box-sizing: border-box; outline: none; 
+        }
+        .login-input:focus { background: #222; box-shadow: 0 0 0 1px #ffd700; }
+
+        /* The Bold Launch Button */
         .btn-primary { 
-            width: 100%; 
-            padding: 16px; 
-            margin-top: 25px; 
-            border-radius: 30px; 
-            border: none; 
-            font-size: 18px; 
-            font-weight: 900; /* ULTRA BOLD */
-            cursor: pointer; 
-            
-            /* THIS IS THE KEY: BLACK TEXT ON GOLD */
-            background: #ffd700; 
-            color: black; 
-            
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); /* The Glow */
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            width: 100%; padding: 16px; margin-top: 25px; border-radius: 30px; border: none; 
+            font-size: 18px; font-weight: 900; cursor: pointer; background: #ffd700; color: black; 
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); text-transform: uppercase; letter-spacing: 1px;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
         }
-        .btn-primary:hover { 
-            transform: scale(1.02); 
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); 
-        }
+        .btn-primary:hover { transform: scale(1.02); box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); }
 
         .btn-secondary {
-            width: 100%;
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 30px;
-            background: transparent;
-            border: 1px solid #444;
-            color: #bbb;
-            font-size: 14px;
-            cursor: pointer;
+            width: 100%; padding: 15px; margin-top: 15px; border-radius: 30px; background: transparent; 
+            border: 1px solid #444; color: #bbb; font-size: 14px; cursor: pointer;
         }
         .btn-secondary:hover { border-color: white; color: white; }
 
-        /* --- CHAT AREA --- */
-        #chat-screen { display: none; flex-direction: column; height: 600px; }
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px; background: #111; border-radius: 15px; margin-bottom: 20px; border: 1px solid #222; }
+
+        /* --- 3. CHAT SCREEN (Classic Wide) --- */
+        #chat-screen { 
+            display: none; 
+            flex-direction: column; 
+            width: 450px; 
+            height: 650px; 
+            background: #1e1e1e; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            overflow: hidden; 
+        }
+
+        .chat-header {
+            background: #252525;
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-title { color: #ffd700; font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 10px;}
+        .online-status { font-size: 12px; color: #888; }
+
+        #chat-box { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 20px; 
+            background: #121212; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px;
+        }
         
-        .message { padding: 10px 15px; margin: 8px 0; border-radius: 20px; max-width: 80%; font-size: 15px; }
-        .sent { background: #ffd700; color: black; align-self: flex-end; font-weight: 500;}
-        .received { background: #222; color: white; align-self: flex-start; }
-        
-        #admin-panel { display: none; background: #1a1a1a; padding: 15px; margin-bottom: 20px; border-left: 5px solid #ffd700; text-align: left; border-radius: 8px;}
-        
-        .chat-input-area { display: flex; gap: 10px; }
-        .send-btn { width: 55px; height: 55px; border-radius: 50%; border: none; background: #ffd700; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; color: black;}
+        .message { padding: 10px 15px; border-radius: 8px; max-width: 75%; font-size: 15px; line-height: 1.4; word-wrap: break-word; }
+        .sent { background: #005c4b; color: white; align-self: flex-end; border-top-right-radius: 0; }
+        .received { background: #202c33; color: white; align-self: flex-start; border-top-left-radius: 0; }
+        .admin-msg { border: 1px solid #ffd700; }
+
+        #admin-panel { background: #2a2a2a; padding: 10px 15px; border-left: 4px solid #ffd700; display: none; }
+
+        .chat-input-area { padding: 10px; background: #1e1e1e; display: flex; gap: 10px; align-items: center; border-top: 1px solid #333; }
+        .chat-input { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #2a2a2a; color: white; font-size: 15px; outline: none; }
+
+        .send-btn { 
+            background: #ffd700; color: black; border: none; width: 40px; height: 40px; 
+            border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; 
+            justify-content: center; align-items: center; 
+        }
 
     </style>
 </head>
 <body>
 
-<div id="app">
-    <div id="login-screen">
-        <h2><span class="logo-icon">☄️</span> NovaChat</h2>
-        
-        <div class="role-selector">
-            <label><input type="radio" name="role" value="student" checked onchange="togglePlaceholder()"> Student</label>
-            <label><input type="radio" name="role" value="admin" onchange="togglePlaceholder()"> Admin</label>
-        </div>
-
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        
-        <button id="login-btn" class="btn-primary" onclick="login()">LAUNCH 🚀</button>
-        <button class="btn-secondary" onclick="register()">Create Account</button>
+<div id="login-screen">
+    <h2><i class="fa-solid fa-meteor logo-icon"></i> NovaChat</h2>
+    
+    <div class="role-selector">
+        <label><input type="radio" name="role" value="student" checked onchange="togglePlaceholder()"> Student</label>
+        <label><input type="radio" name="role" value="admin" onchange="togglePlaceholder()"> Admin</label>
     </div>
 
-    <div id="chat-screen">
-        <div id="admin-panel">
-            <h3 style="color: #ffd700; margin: 0; font-size: 18px;">👑 Admin Controls</h3>
-            <button onclick="createGroup()" style="background:#ffd700; color:black; border:none; padding:8px 15px; border-radius:30px; margin-top:10px; font-weight:bold; cursor:pointer;">+ New Notice Board</button>
-        </div>
+    <input type="text" id="username" class="login-input" placeholder="Username">
+    <input type="password" id="password" class="login-input" placeholder="Password">
+    
+    <button id="login-btn" class="btn-primary" onclick="login()">
+        LAUNCH <i class="fa-solid fa-rocket"></i>
+    </button>
+    <button class="btn-secondary" onclick="register()">Create Account</button>
+</div>
 
-        <div id="chat-box"></div>
-        
-        <div class="chat-input-area">
-            <input type="text" id="message" placeholder="Type a message..." style="margin:0;">
-            <button class="send-btn" onclick="sendMessage()">➤</button>
+<div id="chat-screen">
+    <div class="chat-header">
+        <div class="chat-title"><i class="fa-solid fa-meteor logo-icon" style="font-size:20px;"></i> NovaChat</div>
+        <div class="online-status"><span id="user-count">0</span> Online</div>
+    </div>
+
+    <div id="admin-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#ffd700; font-weight:bold;">👑 Admin Controls</span>
+            <button onclick="createGroup()" style="background:#ffd700; border:none; padding:5px 10px; border-radius:5px; font-weight:bold; cursor:pointer;">+ New Notice</button>
         </div>
-        <p style="font-size: 12px; color: #555; margin-top: 15px;">Secure Connection • <span id="user-count">0</span> Online</p>
+    </div>
+
+    <div id="chat-box"></div>
+
+    <div class="chat-input-area">
+        <input type="text" id="message" class="chat-input" placeholder="Type a message...">
+        <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
 </div>
 
@@ -183,7 +188,7 @@
         const btn = document.getElementById("login-btn");
 
         if (username && pass) {
-            btn.innerHTML = "CONNECTING..."; 
+            btn.innerHTML = 'CONNECTING... <i class="fa-solid fa-spinner fa-spin"></i>'; 
             btn.style.opacity = "0.7";
             socket.emit("login_request", { username, password: pass });
         } else {
@@ -198,7 +203,7 @@
     }
 
     socket.on("login_response", (data) => {
-        document.getElementById("login-btn").innerHTML = "LAUNCH 🚀";
+        document.getElementById("login-btn").innerHTML = 'LAUNCH <i class="fa-solid fa-rocket"></i>';
         document.getElementById("login-btn").style.opacity = "1";
 
         if (data.success) {
@@ -220,6 +225,10 @@
         }
     }
 
+    document.getElementById("message").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") sendMessage();
+    });
+
     socket.on("receive_message", (data) => {
         const chatBox = document.getElementById("chat-box");
         const msgDiv = document.createElement("div");
@@ -230,11 +239,10 @@
         let displayName = data.sender;
         if (data.isAdmin) {
             displayName = "👑 " + data.sender;
-            if(data.sender !== username) {
-                 msgDiv.style.border = "1px solid #ffd700";
-            }
+            msgDiv.classList.add("admin-msg");
         }
-        msgDiv.innerHTML = `<strong>${displayName}:</strong><br>${data.msg}`;
+        
+        msgDiv.innerHTML = `<strong style="font-size:12px; opacity:0.8;">${displayName}</strong><br>${data.msg}`;
         chatBox.appendChild(msgDiv);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
@@ -245,7 +253,7 @@
             const msgDiv = document.createElement("div");
             msgDiv.classList.add("message");
             msgDiv.classList.add(chat.sender_name === username ? "sent" : "received");
-            msgDiv.innerHTML = `<strong>${chat.sender_name}:</strong><br>${chat.message}`;
+            msgDiv.innerHTML = `<strong style="font-size:12px; opacity:0.8;">${chat.sender_name}</strong><br>${chat.message}`;
             document.getElementById("chat-box").appendChild(msgDiv);
         });
     });
