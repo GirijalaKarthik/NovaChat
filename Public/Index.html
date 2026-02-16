@@ -3,21 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NovaChat Gold</title>
+    <title>NovaChat Spaces</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- 1. GLOBAL SETTINGS (Dark Luxury Theme) --- */
+        /* --- YOUR EXACT DESIGN STYLES --- */
         body { 
             font-family: 'Segoe UI', sans-serif; 
-            background: #050505; /* Ultra Dark Background */
+            background: #050505; 
             color: white;
             margin: 0; padding: 0;
-            position: fixed; 
-            top: 0; left: 0; right: 0; bottom: 0;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
         }
 
-        /* --- LOGIN SCREEN --- */
         #login-screen { 
             display: flex; align-items: center; justify-content: center; 
             width: 100%; height: 100%; 
@@ -26,11 +24,12 @@
         
         .login-card { 
             background: rgba(20, 20, 20, 0.95);
-            border: 1px solid rgba(255, 215, 0, 0.2); /* Subtle Gold Border */
+            border: 1px solid rgba(255, 215, 0, 0.2);
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
-            padding: 30px; border-radius: 20px; 
+            padding: 40px; border-radius: 20px; 
             width: 90%; max-width: 400px; 
             text-align: center;
+            transition: all 0.3s ease;
         }
         
         .login-card input {
@@ -40,169 +39,105 @@
         }
         .login-card input:focus { border-color: #FFD700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
 
-        .login-btn { 
+        /* THE GOLD BUTTON */
+        .btn-gold { 
             background: linear-gradient(135deg, #FFD700, #FFA500); 
             border: none; color: #000; padding: 12px; border-radius: 50px; 
             font-weight: 900; width: 100%; margin-bottom: 10px;
             box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+            display: flex; justify-content: center; align-items: center; gap: 10px;
         }
+        
+        .btn-outline-gold {
+            background: transparent; border: 1px solid #FFD700;
+            color: #FFD700; padding: 12px; border-radius: 50px;
+            font-weight: 600; width: 100%;
+        }
+        .btn-outline-gold:hover { background: rgba(255, 215, 0, 0.1); color: white; }
 
-        /* --- 2. MAIN APP LAYOUT --- */
+        /* MAIN APP STYLES */
         #app-screen { 
             display: none; 
-            position: absolute; 
-            top: 0; bottom: 0; left: 0; right: 0;
-            background: transparent; 
-            overflow: hidden;
-            display: flex; 
-            flex-direction: row;
+            position: absolute; top: 0; bottom: 0; left: 0; right: 0;
+            background: transparent; overflow: hidden;
+            display: flex; flex-direction: row;
         }
         
-        /* --- SIDEBAR --- */
-        .sidebar { 
-            width: 300px; 
-            background: #0a0a0a; 
-            border-right: 1px solid rgba(255,255,255,0.05);
-            display: flex; flex-direction: column; 
-            flex-shrink: 0; 
-        }
-
+        .sidebar { width: 300px; background: #0a0a0a; border-right: 1px solid rgba(255,215,0,0.1); display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 25px; border-bottom: 1px solid rgba(255, 215, 0, 0.1); white-space: nowrap; overflow: hidden;}
         
-        .list-group-item { 
-            background: transparent; color: rgba(255,255,255,0.6); 
-            border: none; padding: 15px 20px; cursor: pointer; display: flex; align-items: center;
-            position: relative; transition: 0.2s;
-        }
-        .list-group-item:hover { background: rgba(255, 215, 0, 0.1); color: #FFD700; }
+        .list-group-item { background: transparent; color: rgba(255,255,255,0.6); border: none; padding: 15px 20px; cursor: pointer; display: flex; align-items: center; position: relative; transition: 0.2s; }
+        .list-group-item:hover, .active-chat { background: rgba(255, 215, 0, 0.1); color: #FFD700; }
         
-        .list-group-item.active-chat { 
-            background: linear-gradient(90deg, #FFD700, #FFA500) !important; 
-            color: black !important; font-weight: bold;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-        }
+        .chat-area { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; }
+        .chat-header { background: #0a0a0a; border-bottom: 1px solid rgba(255, 215, 0, 0.2); padding: 0 15px; height: 60px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 5px 15px rgba(0,0,0,0.5); color: #FFD700; flex-shrink: 0; z-index: 10; }
 
-        /* --- CHAT AREA --- */
-        .chat-area { 
-            flex: 1; min-width: 0; 
-            display: flex; flex-direction: column; height: 100%; 
-        }
-        
-        .chat-header { 
-            background: #0a0a0a;
-            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-            padding: 0 15px; height: 60px; 
-            display: flex; align-items: center; justify-content: space-between; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
-            color: #FFD700;
-            flex-shrink: 0; z-index: 10;
-        }
+        #messages { flex: 1; list-style: none; padding: 15px; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 15px; }
+        .msg-bubble { padding: 10px 15px; border-radius: 20px; font-size: 0.95rem; word-wrap: break-word; max-width: 75%; }
+        .msg-sent { align-self: flex-end; background: linear-gradient(135deg, #FFD700, #FFA500); color: black; font-weight: 500; border-bottom-right-radius: 2px; }
+        .msg-received { align-self: flex-start; background: #222; color: white; border-bottom-left-radius: 2px; border: 1px solid rgba(255,255,255,0.1); }
+        .msg-name { font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; opacity: 0.8; }
 
-        /* --- MESSAGES AREA --- */
-        #messages { 
-            flex: 1; list-style: none; padding: 15px; 
-            overflow-y: auto; overflow-x: hidden; 
-            display: flex; flex-direction: column; gap: 15px; 
-        }
-        
-        .message-wrapper { 
-            max-width: 75%; 
-            display: flex; flex-direction: column; position: relative; 
-        }
-
-        .msg-name { font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; margin-left: 12px; opacity: 0.8; }
-        .msg-bubble { padding: 10px 15px; border-radius: 20px; font-size: 0.95rem; word-wrap: break-word; cursor: pointer; }
-
-        .msg-sent { align-self: flex-end; align-items: flex-end; margin-right: 5px; }
-        .msg-sent .msg-bubble { 
-            background: linear-gradient(135deg, #FFD700, #FFA500); 
-            color: black; font-weight: 500;
-            border-bottom-right-radius: 2px; 
-            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
-        }
-        
-        .msg-received { align-self: flex-start; align-items: flex-start; }
-        .msg-received .msg-bubble { background: #222; color: white; border-bottom-left-radius: 2px; border: 1px solid rgba(255,255,255,0.1); cursor: default;}
-
-        .sent-row { display: flex; align-items: center; gap: 8px; }
-
-        /* --- DELETE BUTTON --- */
-        .delete-btn {
-            display: none; 
-            cursor: pointer;
-            color: #ff4d4d;
-            background: rgba(0,0,0,0.5);
-            border-radius: 50%; padding: 8px;
-            animation: fadeIn 0.2s;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
-
-        /* --- INPUT AREA --- */
-        .input-area { 
-            background: #0a0a0a; 
-            padding: 10px; display: flex; gap: 10px; align-items: center; 
-            border-top: 1px solid rgba(255,255,255,0.1);
-            flex-shrink: 0; padding-bottom: 15px; 
-        }
-        .input-area input { 
-            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); 
-            color: white; padding: 10px 20px; border-radius: 50px; flex: 1; outline: none; 
-        }
+        .input-area { background: #0a0a0a; padding: 10px; display: flex; gap: 10px; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; padding-bottom: 15px; }
+        .input-area input { background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 20px; border-radius: 50px; flex: 1; outline: none; }
         .input-area input:focus { border-color: #FFD700; }
+        .btn-send { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        
+        .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; background: rgba(255, 215, 0, 0.1); color: #FFD700; border: 1px solid rgba(255, 215, 0, 0.2); flex-shrink: 0; }
+        .notification-badge { background-color: #FFD700; color: black; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; font-weight: bold; position: absolute; right: 10px; top: 35%; }
 
-        .btn-send { 
-            background: linear-gradient(135deg, #FFD700, #FFA500); 
-            color: #000; border: none; width: 40px; height: 40px; 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-        }
+        /* CODE MODAL */
+        #code-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
+        .code-card { background: #111; padding: 30px; border-radius: 20px; border: 2px solid #FFD700; text-align: center; width: 350px; box-shadow: 0 0 50px rgba(255, 215, 0, 0.3); }
+        .big-code { font-size: 32px; color: #FFD700; letter-spacing: 5px; font-weight: 800; margin: 20px 0; user-select: all; }
 
-        .avatar { 
-            width: 40px; height: 40px; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; margin-right: 15px; 
-            background: rgba(255, 215, 0, 0.1); color: #FFD700;
-            border: 1px solid rgba(255, 215, 0, 0.2); flex-shrink: 0;
-        }
-
-        .notification-badge {
-            background-color: #FFD700; color: black; border-radius: 50%;
-            padding: 2px 6px; font-size: 0.7rem; font-weight: bold;
-            position: absolute; right: 10px; top: 35%;
-            box-shadow: 0 0 5px #FFD700;
-        }
-
-        /* --- 📱 MOBILE SPECIFIC CSS --- */
         @media (max-width: 768px) {
             .sidebar { width: 60px; } 
             .sidebar-header h4, .sidebar-header small { display: none; } 
-            /* HEADER ICON MATCHING LOGIN LOGO */
             .sidebar-header i { font-size: 1.5rem; margin: 0 auto; display: block; text-align: center; color: #FFD700;}
-            
             .list-group-item div:nth-child(2) { display: none; }
-            .list-group-item { padding: 15px 5px; justify-content: center; }
-            .avatar { margin-right: 0; width: 35px; height: 35px; font-size: 0.9rem;}
-            
-            .notification-badge { top: 5px; right: 5px; font-size: 0.6rem; padding: 1px 4px;}
             .login-card { width: 90%; padding: 20px; }
-            
-            .msg-bubble { font-size: 0.9rem; padding: 8px 12px; }
-            .message-wrapper { max-width: 80%; }
         }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <div class="login-card">
+        <div class="login-card" id="step-1">
             <h2 class="fw-bold mb-4" style="color: #FFD700;">
                 <i class="fas fa-meteor me-2"></i>NovaChat
             </h2>
-            <input type="text" id="username" placeholder="Username" autocomplete="off">
-            <input type="password" id="password" placeholder="Password" autocomplete="off">
-            <button onclick="doLogin()" class="btn login-btn">LAUNCH <i class="fas fa-rocket ms-2"></i></button>
-            <button onclick="doRegister()" class="btn btn-outline-light w-100 rounded-pill">Create Account</button>
+            
+            <input type="text" id="nickname" placeholder="Enter Your Name" autocomplete="off">
+            
+            <div id="join-inputs" style="display: none;">
+                <input type="text" id="space-code-input" placeholder="Enter Space Code (e.g. X9Y2Z1)" style="text-transform: uppercase; letter-spacing: 2px; border-color: #FFD700;">
+            </div>
+
+            <button id="btn-create" onclick="createSpace()" class="btn btn-gold w-100 mb-2">
+                Create New Space <i class="fas fa-rocket"></i>
+            </button>
+            
+            <button id="btn-join-mode" onclick="showJoinMode()" class="btn btn-outline-gold w-100">
+                Join Existing Space
+            </button>
+            
+            <button id="btn-join-submit" onclick="joinSpace()" class="btn btn-gold w-100" style="display: none;">
+                Enter Space
+            </button>
+            <button id="btn-back" onclick="resetLogin()" class="btn btn-link text-muted" style="display: none;">Back</button>
+            
             <p id="login-error" class="text-danger mt-3 small fw-bold"></p>
+        </div>
+    </div>
+
+    <div id="code-modal">
+        <div class="code-card">
+            <h4 style="color: white;">Space Created!</h4>
+            <p style="color: #888;">Share this code with your friends:</p>
+            <div class="big-code" id="generated-code">...</div>
+            <button class="btn btn-gold w-100 mb-2" onclick="copyCode()">Copy Code</button>
+            <button class="btn btn-outline-gold w-100" onclick="enterApp()">OK, Enter Chat</button>
         </div>
     </div>
 
@@ -210,18 +145,25 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <h4 class="m-0 fw-bold" style="color: #FFD700;"><i class="fas fa-meteor"></i> <span class="d-none d-md-inline">NovaChat</span></h4>
-                <small class="d-none d-md-block" style="color: rgba(255,255,255,0.6);">Connected as <span id="my-name-display" class="fw-bold text-white">...</span></small>
+                <small id="my-name-display" style="color: rgba(255,255,255,0.6);">...</small>
             </div>
             <ul id="user-list" class="list-group list-group-flush"></ul>
         </div>
 
         <div class="chat-area">
-            <div class="chat-header" id="main-header">
+            <div class="chat-header">
                 <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    <h5 id="chat-title" class="m-0 fw-bold">Nebula Network</h5>
-                    <small id="chat-status" style="color: rgba(255,255,255,0.5);">Public Nebula</small>
+                    <h5 id="chat-title" class="m-0 fw-bold">Public Space</h5>
+                    <small id="chat-status" style="color: rgba(255,255,255,0.5);">Space Chat</small>
                 </div>
-                <button class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="clearAllChat()"><i class="fas fa-trash"></i> <span class="d-none d-md-inline">History</span></button>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <div id="header-code-display" style="border: 1px solid #FFD700; padding: 5px 15px; border-radius: 20px; color:#FFD700; font-weight:bold; letter-spacing:1px; font-size:0.9rem;">CODE: ...</div>
+                    
+                    <button class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="document.getElementById('messages').innerHTML=''">
+                        <i class="fas fa-trash"></i> <span class="d-none d-md-inline">History</span>
+                    </button>
+                </div>
             </div>
             
             <ul id="messages"></ul>
@@ -238,58 +180,85 @@
         const socket = io();
         let myName = "";
         let currentRecipient = "Everyone"; 
-        let allMessages = []; 
-        let unreadCounts = {}; 
+        let mySpaceCode = "";
+        let unreadCounts = {};
 
-        function stringToColor(str) {
-            let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-            let color = '#'; for (let i = 0; i < 3; i++) color += ('00' + (Math.min((hash >> (i * 8)) & 0xFF, 200)).toString(16)).substr(-2);
-            return color;
+        // --- LOGIN FLOW ---
+        function showJoinMode() {
+            document.getElementById("btn-create").style.display = "none";
+            document.getElementById("btn-join-mode").style.display = "none";
+            document.getElementById("join-inputs").style.display = "block";
+            document.getElementById("btn-join-submit").style.display = "block";
+            document.getElementById("btn-back").style.display = "block";
         }
 
-        function doLogin() {
-            const user = document.getElementById("username").value.trim();
-            const pass = document.getElementById("password").value.trim();
-            if(user && pass) {
-                myName = user;
-                socket.emit("login_request", { username: user, password: pass });
-            }
+        function resetLogin() {
+            document.getElementById("btn-create").style.display = "flex"; // Reset to flex to keep icon aligned
+            document.getElementById("btn-join-mode").style.display = "block";
+            document.getElementById("join-inputs").style.display = "none";
+            document.getElementById("btn-join-submit").style.display = "none";
+            document.getElementById("btn-back").style.display = "none";
+            document.getElementById("login-error").innerText = "";
         }
 
-        function doRegister() {
-            const user = document.getElementById("username").value.trim();
-            const pass = document.getElementById("password").value.trim();
-            if(user && pass) {
-                socket.emit("register_request", { username: user, password: pass });
-            }
+        function createSpace() {
+            const name = document.getElementById("nickname").value.trim();
+            if(!name) { document.getElementById("login-error").innerText = "Please enter your name"; return; }
+            myName = name;
+            socket.emit("create_space", name);
         }
 
-        socket.on("login_response", (data) => {
-            if(data.success) {
-                document.getElementById("login-screen").style.display = "none";
-                document.getElementById("app-screen").style.display = "flex"; 
-                if(document.getElementById("my-name-display")) {
-                    document.getElementById("my-name-display").innerText = myName;
-                }
-            } else {
-                document.getElementById("login-error").innerText = data.msg;
-            }
+        function joinSpace() {
+            const name = document.getElementById("nickname").value.trim();
+            const code = document.getElementById("space-code-input").value.trim().toUpperCase();
+            if(!name || !code) { document.getElementById("login-error").innerText = "Name and Code required"; return; }
+            myName = name;
+            socket.emit("join_space", { name: name, code: code });
+        }
+
+        // --- SOCKET EVENTS ---
+        socket.on("space_created", (data) => {
+            mySpaceCode = data.code;
+            document.getElementById("generated-code").innerText = data.code;
+            document.getElementById("login-screen").style.display = "none"; 
+            document.getElementById("code-modal").style.display = "flex"; 
         });
 
-        socket.on("register_response", (data) => alert(data.msg));
+        socket.on("joined_success", (data) => {
+            mySpaceCode = data.code;
+            enterApp();
+        });
 
+        socket.on("error_msg", (msg) => {
+            document.getElementById("login-error").innerText = msg;
+        });
+
+        function enterApp() {
+            document.getElementById("code-modal").style.display = "none";
+            document.getElementById("login-screen").style.display = "none";
+            document.getElementById("app-screen").style.display = "flex";
+            document.getElementById("my-name-display").innerText = myName;
+            document.getElementById("header-code-display").innerText = "CODE: " + mySpaceCode;
+            switchChat("Everyone");
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(document.getElementById("generated-code").innerText);
+            alert("Code Copied!");
+        }
+
+        // --- CHAT LOGIC ---
         function switchChat(user) {
             currentRecipient = user;
             unreadCounts[user] = 0;
-            updateUserListUI(); 
+            updateUserListUI();
 
             const title = document.getElementById("chat-title");
             const status = document.getElementById("chat-status");
-            const header = document.getElementById("main-header");
 
             if (user === "Everyone") {
-                title.innerText = "Nebula Network";
-                status.innerText = "Public Nebula";
+                title.innerText = "Public Space";
+                status.innerText = "Space Chat";
             } else {
                 title.innerText = user;
                 status.innerText = "🔒 Private Signal";
@@ -299,104 +268,64 @@
             const activeItem = document.getElementById("user-" + user);
             if(activeItem) activeItem.classList.add("active-chat");
 
-            renderChat();
-        }
-
-        function renderChat() {
-            const list = document.getElementById("messages");
-            list.innerHTML = "";
-            allMessages.forEach(msg => {
-                let show = false;
-                if (currentRecipient === "Everyone") {
-                    if (!msg.isPrivate) show = true;
-                } else {
-                    if (msg.isPrivate) {
-                        if ((msg.sender === myName && msg.toUser === currentRecipient) || 
-                            (msg.sender === currentRecipient && msg.toUser === myName)) {
-                            show = true;
-                        }
-                    }
-                }
-                if (show) addMessageToDOM(msg);
-            });
-            list.scrollTop = list.scrollHeight;
+            document.getElementById("messages").innerHTML = "";
         }
 
         function sendMessage() {
             const input = document.getElementById("message-input");
             if (input.value.trim() !== "") {
-                socket.emit("send_message", { sender: myName, msg: input.value, toUser: currentRecipient });
+                socket.emit("send_message", { msg: input.value, toUser: currentRecipient });
                 input.value = "";
             }
         }
-
         function handleEnter(e) { if(e.key === "Enter") sendMessage(); }
-        
-        function toggleDeleteBtn(id) {
-            const btn = document.getElementById("del-btn-" + id);
-            if(btn) {
-                if (btn.style.display === "block") {
-                    btn.style.display = "none";
-                } else {
-                    btn.style.display = "block";
+
+        socket.on("receive_message", (data) => {
+            let show = false;
+            if (currentRecipient === "Everyone") {
+                if (!data.isPrivate) show = true;
+            } else {
+                if (data.isPrivate) {
+                    if ((data.sender === myName && data.toUser === currentRecipient) || 
+                        (data.sender === currentRecipient && data.toUser === myName)) {
+                        show = true;
+                    }
                 }
             }
-        }
 
-        function deleteMessage(id) { if(confirm("Delete?")) socket.emit("delete_message", id); }
-        function clearAllChat() { if(confirm("Clear history?")) socket.emit("clear_all_chat"); }
+            if (show) {
+                addMessageToDOM(data);
+            } else {
+                if (data.isPrivate && data.sender !== myName) {
+                    unreadCounts[data.sender] = (unreadCounts[data.sender] || 0) + 1;
+                    updateUserListUI();
+                }
+            }
+        });
 
         function addMessageToDOM(data) {
             const list = document.getElementById("messages");
             const li = document.createElement("li");
-            li.classList.add("message-wrapper");
-            li.id = "msg-" + data.id;
+            li.style.display = "flex";
+            li.style.flexDirection = "column";
+            li.style.position = "relative";
+            li.style.marginBottom = "10px";
 
             let html = ``;
-
             if (data.sender !== myName) {
-                li.classList.add("msg-received");
-                if (currentRecipient === "Everyone") {
-                    const color = stringToColor(data.sender);
-                    html += `<div class="msg-name" style="color:${color};">${data.sender}</div>`;
-                }
-                html += `<div class="msg-bubble">${data.msg}</div>`;
+                li.style.alignItems = "flex-start";
+                html += `<div class="msg-name">${data.sender}</div>
+                         <div class="msg-bubble" style="background:#222; color:white; border-bottom-left-radius:2px;">${data.msg}</div>`;
             } else {
-                li.classList.add("msg-sent");
-                html += `<div class="sent-row">
-                            <div class="msg-bubble" onclick="toggleDeleteBtn(${data.id})">${data.msg}</div>
-                            <i id="del-btn-${data.id}" class="fas fa-trash-alt delete-btn" onclick="deleteMessage(${data.id})"></i>
-                         </div>`;
+                li.style.alignItems = "flex-end";
+                html += `<div class="msg-bubble" style="background:linear-gradient(135deg, #FFD700, #FFA500); color:black; font-weight:500; border-bottom-right-radius:2px;">${data.msg}</div>`;
             }
-
             li.innerHTML = html;
             list.appendChild(li);
+            list.scrollTop = list.scrollHeight;
         }
 
-        socket.on("receive_message", (data) => { 
-            allMessages.push(data);
-            if (data.isPrivate && data.sender !== myName && data.sender !== currentRecipient) {
-                if (!unreadCounts[data.sender]) unreadCounts[data.sender] = 0;
-                unreadCounts[data.sender]++;
-                updateUserListUI(); 
-            }
-            renderChat(); 
-        });
-
-        socket.on("load_messages", (data) => {
-            data.forEach(item => {
-                allMessages.push({ 
-                    id: item.id, sender: item.sender_name, msg: item.message, 
-                    isPrivate: item.type === 'private', toUser: 'Everyone' 
-                });
-            });
-            renderChat();
-        });
-        socket.on("message_deleted", (id) => { allMessages = allMessages.filter(m => m.id !== id); renderChat(); });
-        socket.on("chat_cleared", () => { allMessages = []; renderChat(); });
-
         let currentUsers = [];
-
         socket.on("update_user_list", (users) => {
             currentUsers = users;
             updateUserListUI();
@@ -406,21 +335,21 @@
             const list = document.getElementById("user-list");
             let html = `<li class="list-group-item" onclick="switchChat('Everyone')">
                             <div class="avatar"><i class="fas fa-users"></i></div>
-                            <div><div class="fw-bold">Group</div></div>
+                            <div><div class="fw-bold">Everyone</div></div>
                         </li>`;
             
             currentUsers.forEach(u => {
-                if(u !== myName) {
+                if(u.name !== myName) {
                     let badgeHtml = "";
-                    if (unreadCounts[u] && unreadCounts[u] > 0) {
-                        badgeHtml = `<span class="notification-badge">${unreadCounts[u]}</span>`;
+                    if (unreadCounts[u.name] > 0) {
+                        badgeHtml = `<span class="notification-badge">${unreadCounts[u.name]}</span>`;
                     }
-                    const activeClass = (u === currentRecipient) ? "active-chat" : "";
+                    const activeClass = (u.name === currentRecipient) ? "active-chat" : "";
                     html += `
-                        <li class="list-group-item ${activeClass}" id="user-${u}" onclick="switchChat('${u}')">
-                            <div class="avatar">${u.charAt(0).toUpperCase()}</div>
+                        <li class="list-group-item ${activeClass}" id="user-${u.name}" onclick="switchChat('${u.name}')">
+                            <div class="avatar">${u.name.charAt(0).toUpperCase()}</div>
                             <div>
-                                <div class="fw-bold">${u}</div>
+                                <div class="fw-bold">${u.name}</div>
                                 <div style="font-size:0.7rem; color:#2ecc71;">● Online</div>
                             </div>
                             ${badgeHtml}
