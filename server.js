@@ -4,7 +4,7 @@ const { Server } = require("socket.io");
 const path = require("path");
 const { customAlphabet } = require('nanoid');
 const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const nanoid = customAlphabet(alphabet, 6); // Generates codes like "A1B2C3"
+const nanoid = customAlphabet(alphabet, 6); 
 
 const app = express();
 const server = http.createServer(app);
@@ -17,8 +17,8 @@ app.get("/", (req, res) => {
 });
 
 // --- SPACE MANAGEMENT ---
-let spaces = {}; // Stores: { "CODE": { hostId: "...", users: [] } }
-let users = {};  // Maps: socket.id -> { name: "Deva", space: "CODE" }
+let spaces = {}; 
+let users = {}; 
 
 io.on("connection", (socket) => {
 
@@ -26,35 +26,26 @@ io.on("connection", (socket) => {
     socket.on("create_space", (name) => {
         const code = nanoid();
         spaces[code] = { hostId: socket.id, users: [] };
+        socket.join(code);
         
-        socket.join(code); // Join the "Room"
-        
-        // Save user info
         users[socket.id] = { name: name, space: code };
         spaces[code].users.push({ id: socket.id, name: name });
 
-        // Tell user it worked
         socket.emit("space_created", { code: code, name: name });
-        
-        // Update user list for this room
         io.to(code).emit("update_user_list", spaces[code].users);
     });
 
     // 2. JOIN SPACE
     socket.on("join_space", ({ name, code }) => {
-        // Check if space exists
         if (!spaces[code]) {
             socket.emit("error_msg", "Invalid or Expired Space Code");
             return;
         }
-
         socket.join(code);
         users[socket.id] = { name: name, space: code };
         spaces[code].users.push({ id: socket.id, name: name });
 
         socket.emit("joined_success", { code: code, name: name });
-        
-        // Notify everyone in the room
         io.to(code).emit("update_user_list", spaces[code].users);
     });
 
@@ -72,29 +63,34 @@ io.on("connection", (socket) => {
         };
 
         if (data.toUser === "Everyone") {
-            // Send to everyone in the SPACE
             io.to(user.space).emit("receive_message", messageData);
         } else {
-            // Send Private
             const recipient = spaces[user.space].users.find(u => u.name === data.toUser);
             if (recipient) {
-                io.to(recipient.id).emit("receive_message", messageData); // To Them
-                socket.emit("receive_message", messageData); // To Me
+                io.to(recipient.id).emit("receive_message", messageData); 
+                socket.emit("receive_message", messageData); 
             }
         }
     });
 
-    // 4. DISCONNECT
+    // 4. END SPACE (NEW FEATURE)
+    socket.on("end_space", () => {
+        const user = users[socket.id];
+        if (user && spaces[user.space] && spaces[user.space].hostId === socket.id) {
+            // Delete the space so code becomes invalid
+            delete spaces[user.space]; 
+            // Optional: You could emit an event here to kick everyone out, 
+            // but for now we just make the code invalid for new joins.
+        }
+    });
+
+    // 5. DISCONNECT
     socket.on("disconnect", () => {
         const user = users[socket.id];
         if (user) {
             const spaceCode = user.space;
-            
-            // Remove user from space list
             if (spaces[spaceCode]) {
                 spaces[spaceCode].users = spaces[spaceCode].users.filter(u => u.id !== socket.id);
-                
-                // If space is empty, delete it? (Optional, kept simple for now)
                 if (spaces[spaceCode].users.length === 0) {
                     delete spaces[spaceCode];
                 } else {

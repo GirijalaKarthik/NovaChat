@@ -91,6 +91,8 @@
         .code-card { background: #111; padding: 30px; border-radius: 20px; border: 2px solid #FFD700; text-align: center; width: 350px; box-shadow: 0 0 50px rgba(255, 215, 0, 0.3); }
         .big-code { font-size: 32px; color: #FFD700; letter-spacing: 5px; font-weight: 800; margin: 20px 0; user-select: all; }
 
+        .space-code-display { border: 1px solid #FFD700; background: rgba(255, 215, 0, 0.1); color: #FFD700; padding: 5px 15px; border-radius: 20px; font-weight: bold; letter-spacing: 2px; font-size: 0.9rem; margin-right: 10px; }
+
         @media (max-width: 768px) {
             .sidebar { width: 60px; } 
             .sidebar-header h4, .sidebar-header small { display: none; } 
@@ -103,30 +105,17 @@
 <body>
 
     <div id="login-screen">
-        <div class="login-card" id="step-1">
-            <h2 class="fw-bold mb-4" style="color: #FFD700;">
-                <i class="fas fa-meteor me-2"></i>NovaChat
-            </h2>
-            
-            <input type="text" id="nickname" placeholder="Enter Your Name" autocomplete="off">
-            
+        <div class="login-card">
+            <h2 class="fw-bold mb-4" style="color: #FFD700;"><i class="fas fa-meteor me-2"></i>NovaChat</h2>
+            <input type="text" id="nickname" placeholder="Enter Your Nickname" autocomplete="off">
             <div id="join-inputs" style="display: none;">
                 <input type="text" id="space-code-input" placeholder="Enter Space Code (e.g. X9Y2Z1)" style="text-transform: uppercase; letter-spacing: 2px; border-color: #FFD700;">
             </div>
-
-            <button id="btn-create" onclick="createSpace()" class="btn btn-gold w-100 mb-2">
-                Create New Space <i class="fas fa-rocket"></i>
-            </button>
             
-            <button id="btn-join-mode" onclick="showJoinMode()" class="btn btn-outline-gold w-100">
-                Join Existing Space
-            </button>
-            
-            <button id="btn-join-submit" onclick="joinSpace()" class="btn btn-gold w-100" style="display: none;">
-                Enter Space
-            </button>
+            <button id="btn-create" onclick="createSpace()" class="btn btn-gold w-100 mb-2">Create New Space <i class="fas fa-rocket"></i></button>
+            <button id="btn-join-mode" onclick="showJoinMode()" class="btn btn-outline-gold w-100">Join Existing Space</button>
+            <button id="btn-join-submit" onclick="joinSpace()" class="btn btn-gold w-100" style="display: none;">Enter Space</button>
             <button id="btn-back" onclick="resetLogin()" class="btn btn-link text-muted" style="display: none;">Back</button>
-            
             <p id="login-error" class="text-danger mt-3 small fw-bold"></p>
         </div>
     </div>
@@ -158,10 +147,13 @@
                 </div>
                 
                 <div class="d-flex align-items-center gap-2">
-                    <div id="header-code-display" style="border: 1px solid #FFD700; padding: 5px 15px; border-radius: 20px; color:#FFD700; font-weight:bold; letter-spacing:1px; font-size:0.9rem;">CODE: ...</div>
+                    <div id="header-code-display" class="space-code-display">CODE: ...</div>
                     
-                    <button class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="document.getElementById('messages').innerHTML=''">
+                    <button class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="clearLocalHistory()">
                         <i class="fas fa-trash"></i> <span class="d-none d-md-inline">History</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="endSpace()">
+                        <i class="fas fa-power-off"></i> <span class="d-none d-md-inline">End Space</span>
                     </button>
                 </div>
             </div>
@@ -182,8 +174,11 @@
         let currentRecipient = "Everyone"; 
         let mySpaceCode = "";
         let unreadCounts = {};
+        
+        // --- PERSISTENCE STORE ---
+        // chatStore = { 'Everyone': [], 'Deva': [], 'Priya': [] }
+        let chatStore = { 'Everyone': [] };
 
-        // --- LOGIN FLOW ---
         function showJoinMode() {
             document.getElementById("btn-create").style.display = "none";
             document.getElementById("btn-join-mode").style.display = "none";
@@ -193,7 +188,7 @@
         }
 
         function resetLogin() {
-            document.getElementById("btn-create").style.display = "flex"; // Reset to flex to keep icon aligned
+            document.getElementById("btn-create").style.display = "flex";
             document.getElementById("btn-join-mode").style.display = "block";
             document.getElementById("join-inputs").style.display = "none";
             document.getElementById("btn-join-submit").style.display = "none";
@@ -203,7 +198,7 @@
 
         function createSpace() {
             const name = document.getElementById("nickname").value.trim();
-            if(!name) { document.getElementById("login-error").innerText = "Please enter your name"; return; }
+            if(!name) { document.getElementById("login-error").innerText = "Please enter a nickname"; return; }
             myName = name;
             socket.emit("create_space", name);
         }
@@ -216,7 +211,6 @@
             socket.emit("join_space", { name: name, code: code });
         }
 
-        // --- SOCKET EVENTS ---
         socket.on("space_created", (data) => {
             mySpaceCode = data.code;
             document.getElementById("generated-code").innerText = data.code;
@@ -229,9 +223,7 @@
             enterApp();
         });
 
-        socket.on("error_msg", (msg) => {
-            document.getElementById("login-error").innerText = msg;
-        });
+        socket.on("error_msg", (msg) => document.getElementById("login-error").innerText = msg);
 
         function enterApp() {
             document.getElementById("code-modal").style.display = "none";
@@ -239,12 +231,27 @@
             document.getElementById("app-screen").style.display = "flex";
             document.getElementById("my-name-display").innerText = myName;
             document.getElementById("header-code-display").innerText = "CODE: " + mySpaceCode;
+            chatStore = { 'Everyone': [] }; // Reset store on new entry
             switchChat("Everyone");
         }
 
         function copyCode() {
             navigator.clipboard.writeText(document.getElementById("generated-code").innerText);
             alert("Code Copied!");
+        }
+
+        function endSpace() {
+            if(confirm("Are you sure you want to Leave/End this Space?")) {
+                socket.emit("end_space");
+                location.reload(); // Returns to login page
+            }
+        }
+
+        function clearLocalHistory() {
+            if(confirm("Clear history for this chat?")) {
+                chatStore[currentRecipient] = [];
+                document.getElementById("messages").innerHTML = "";
+            }
         }
 
         // --- CHAT LOGIC ---
@@ -268,7 +275,11 @@
             const activeItem = document.getElementById("user-" + user);
             if(activeItem) activeItem.classList.add("active-chat");
 
-            document.getElementById("messages").innerHTML = "";
+            // RESTORE HISTORY
+            const history = chatStore[user] || [];
+            const list = document.getElementById("messages");
+            list.innerHTML = "";
+            history.forEach(msg => appendMessageToDOM(msg));
         }
 
         function sendMessage() {
@@ -281,21 +292,31 @@
         function handleEnter(e) { if(e.key === "Enter") sendMessage(); }
 
         socket.on("receive_message", (data) => {
-            let show = false;
-            if (currentRecipient === "Everyone") {
-                if (!data.isPrivate) show = true;
+            // STORE THE MESSAGE
+            if (data.isPrivate) {
+                // If I sent it, store in Recipient's box. If I received it, store in Sender's box.
+                const storageKey = (data.sender === myName) ? data.toUser : data.sender;
+                if (!chatStore[storageKey]) chatStore[storageKey] = [];
+                chatStore[storageKey].push(data);
             } else {
-                if (data.isPrivate) {
-                    if ((data.sender === myName && data.toUser === currentRecipient) || 
-                        (data.sender === currentRecipient && data.toUser === myName)) {
-                        show = true;
-                    }
+                if (!chatStore['Everyone']) chatStore['Everyone'] = [];
+                chatStore['Everyone'].push(data);
+            }
+
+            // UPDATE UI IF ACTIVE
+            let isActive = false;
+            if (currentRecipient === "Everyone" && !data.isPrivate) isActive = true;
+            if (data.isPrivate) {
+                if ((data.sender === myName && data.toUser === currentRecipient) || 
+                    (data.sender === currentRecipient && data.toUser === myName)) {
+                    isActive = true;
                 }
             }
 
-            if (show) {
-                addMessageToDOM(data);
+            if (isActive) {
+                appendMessageToDOM(data);
             } else {
+                // Notification
                 if (data.isPrivate && data.sender !== myName) {
                     unreadCounts[data.sender] = (unreadCounts[data.sender] || 0) + 1;
                     updateUserListUI();
@@ -303,7 +324,7 @@
             }
         });
 
-        function addMessageToDOM(data) {
+        function appendMessageToDOM(data) {
             const list = document.getElementById("messages");
             const li = document.createElement("li");
             li.style.display = "flex";
