@@ -7,60 +7,24 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- YOUR EXACT DESIGN STYLES --- */
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background: #050505; 
-            color: white;
-            margin: 0; padding: 0;
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-        }
-
+        /* --- GLOBAL STYLES --- */
+        body { font-family: 'Segoe UI', sans-serif; background: #050505; color: white; margin: 0; padding: 0; position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
         #login-screen { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; position: absolute; z-index: 1000; background: #050505; }
-        
-        .login-card { 
-            background: rgba(20, 20, 20, 0.95);
-            border: 1px solid rgba(255, 215, 0, 0.2);
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
-            padding: 40px; border-radius: 20px; 
-            width: 90%; max-width: 400px; 
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .login-card input {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);
-            color: white; padding: 15px 25px; border-radius: 50px; 
-            width: 100%; outline: none; margin-bottom: 15px; transition: 0.3s;
-        }
+        .login-card { background: rgba(20, 20, 20, 0.95); border: 1px solid rgba(255, 215, 0, 0.2); box-shadow: 0 0 30px rgba(255, 215, 0, 0.1); padding: 40px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
+        .login-card input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px 25px; border-radius: 50px; width: 100%; outline: none; margin-bottom: 15px; }
         .login-card input:focus { border-color: #FFD700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
-
-        /* GOLD BUTTON STYLES */
-        .btn-gold { 
-            background: linear-gradient(135deg, #FFD700, #FFA500); 
-            border: none; color: #000; padding: 12px; border-radius: 50px; 
-            font-weight: 900; width: 100%; margin-bottom: 10px;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-        }
-        .btn-outline-gold {
-            background: transparent; border: 1px solid #FFD700;
-            color: #FFD700; padding: 12px; border-radius: 50px;
-            font-weight: 600; width: 100%;
-        }
-        .btn-outline-gold:hover { background: rgba(255, 215, 0, 0.1); color: white; }
-
-        /* APP LAYOUT */
+        .btn-gold { background: linear-gradient(135deg, #FFD700, #FFA500); border: none; color: #000; padding: 12px; border-radius: 50px; font-weight: 900; width: 100%; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-outline-gold { background: transparent; border: 1px solid #FFD700; color: #FFD700; padding: 12px; border-radius: 50px; font-weight: 600; width: 100%; }
+        
         #app-screen { display: none; position: absolute; top: 0; bottom: 0; left: 0; right: 0; background: transparent; overflow: hidden; display: flex; flex-direction: row; }
         .sidebar { width: 300px; background: #0a0a0a; border-right: 1px solid rgba(255,215,0,0.1); display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 25px; border-bottom: 1px solid rgba(255, 215, 0, 0.1); white-space: nowrap; overflow: hidden;}
-        
+        .sidebar-header { padding: 25px; border-bottom: 1px solid rgba(255, 215, 0, 0.1); white-space: nowrap; overflow: hidden; }
         .list-group-item { background: transparent; color: rgba(255,255,255,0.6); border: none; padding: 15px 20px; cursor: pointer; display: flex; align-items: center; position: relative; transition: 0.2s; }
         .list-group-item:hover, .active-chat { background: rgba(255, 215, 0, 0.1); color: #FFD700; }
         
         .chat-area { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; }
-        .chat-header { background: #0a0a0a; border-bottom: 1px solid rgba(255, 215, 0, 0.2); padding: 0 15px; height: 60px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 5px 15px rgba(0,0,0,0.5); color: #FFD700; flex-shrink: 0; z-index: 10; }
-
+        .chat-header { background: #0a0a0a; border-bottom: 1px solid rgba(255, 215, 0, 0.2); padding: 0 15px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 10; }
+        
         #messages { flex: 1; list-style: none; padding: 15px; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 15px; }
         .msg-bubble { padding: 10px 15px; border-radius: 20px; font-size: 0.95rem; word-wrap: break-word; max-width: 75%; }
         .msg-sent { align-self: flex-end; background: linear-gradient(135deg, #FFD700, #FFA500); color: black; font-weight: 500; border-bottom-right-radius: 2px; }
@@ -75,17 +39,10 @@
         .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; background: rgba(255, 215, 0, 0.1); color: #FFD700; border: 1px solid rgba(255, 215, 0, 0.2); flex-shrink: 0; }
         .notification-badge { background-color: #FFD700; color: black; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; font-weight: bold; position: absolute; right: 10px; top: 35%; }
 
-        /* CODE MODAL & DISPLAY */
         #code-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
         .code-card { background: #111; padding: 30px; border-radius: 20px; border: 2px solid #FFD700; text-align: center; width: 350px; }
         .big-code { font-size: 32px; color: #FFD700; letter-spacing: 5px; font-weight: 800; margin: 20px 0; user-select: all; }
         .space-code-display { border: 1px solid #FFD700; background: rgba(255, 215, 0, 0.1); color: #FFD700; padding: 5px 15px; border-radius: 20px; font-weight: bold; letter-spacing: 2px; font-size: 0.9rem; margin-right: 10px; }
-
-        /* AI MENU */
-        .ai-menu { display: none; position: absolute; top: 60px; right: 140px; background: #1a1a1a; border: 1px solid #FFD700; border-radius: 10px; padding: 10px; width: 200px; z-index: 100; box-shadow: 0 0 15px rgba(0,0,0,0.8); }
-        .ai-btn { display: block; width: 100%; text-align: left; background: transparent; color: #ddd; border: none; padding: 10px; border-radius: 5px; font-size: 14px; margin-bottom: 2px;}
-        .ai-btn:hover { background: rgba(255, 215, 0, 0.2); color: #FFD700; }
-        .ai-btn i { width: 20px; text-align: center; color: #FFD700; margin-right: 5px;}
 
         @media (max-width: 768px) {
             .sidebar { width: 60px; } 
@@ -142,9 +99,6 @@
                 <div class="d-flex align-items-center gap-2">
                     <div id="header-code-display" class="space-code-display">CODE: ...</div>
                     
-                    <button class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="toggleAIMenu()">
-                        <i class="fas fa-robot"></i> <span class="d-none d-md-inline">AI Assist</span>
-                    </button>
                     <button class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="clearLocalHistory()">
                         <i class="fas fa-trash"></i> <span class="d-none d-md-inline">History</span>
                     </button>
@@ -152,8 +106,6 @@
                         <i class="fas fa-power-off"></i> <span class="d-none d-md-inline">End</span>
                     </button>
                 </div>
-                
-                <div id="ai-menu" class="ai-menu"></div>
             </div>
             
             <ul id="messages"></ul>
@@ -289,78 +241,6 @@
                 }
             });
             list.innerHTML = html;
-        }
-
-        // --- AI LOGIC ---
-        function toggleAIMenu() {
-            const menu = document.getElementById("ai-menu");
-            if(menu.style.display === "block") { menu.style.display = "none"; return; }
-            
-            if(currentRecipient === 'Everyone') {
-                menu.innerHTML = `
-                    <button class="ai-btn" onclick="callAI('summarize')"><i class="fas fa-list-ul"></i> Summarize Chat</button>
-                    <button class="ai-btn" onclick="callAI('translate')"><i class="fas fa-language"></i> Translate Last</button>
-                `;
-            } else {
-                menu.innerHTML = `
-                    <button class="ai-btn" onclick="callAI('suggest')"><i class="fas fa-magic"></i> Suggest Reply</button>
-                    <button class="ai-btn" onclick="callAI('translate')"><i class="fas fa-language"></i> Translate Last</button>
-                `;
-            }
-            menu.style.display = "block";
-        }
-        
-        // Hide menu when clicking elsewhere
-        document.addEventListener('click', (e) => {
-            const menu = document.getElementById("ai-menu");
-            if (!e.target.closest('.btn-outline-warning') && !e.target.closest('.ai-menu')) menu.style.display = "none";
-        });
-
-        async function callAI(action) {
-            const menu = document.getElementById("ai-menu");
-            menu.style.display = "none";
-            const input = document.getElementById("message-input");
-            
-            // CONTEXT GATHERING
-            let context = "";
-            let endpoint = "";
-            let body = {};
-            const bubbles = document.querySelectorAll("#messages .msg-bubble");
-            bubbles.forEach(b => context += b.innerText + "\n");
-
-            if(!context) { alert("Chat is empty!"); return; }
-
-            if (action === 'translate') {
-                // Only last message
-                const lastMsg = bubbles[bubbles.length-1].innerText;
-                endpoint = '/api/ai/translate';
-                body = { text: lastMsg };
-                input.value = "🤖 Translating...";
-            } else if (action === 'summarize') {
-                endpoint = '/api/ai/summarize';
-                body = { chatHistory: context };
-                input.value = "🤖 Summarizing...";
-            } else {
-                endpoint = '/api/ai/suggest';
-                body = { chatHistory: context, myName: myName };
-                input.value = "🤖 Thinking...";
-            }
-
-            input.disabled = true;
-
-            try {
-                const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                const data = await res.json();
-                input.value = data.result || "AI Error";
-            } catch(e) {
-                input.value = "AI Failed";
-            } finally {
-                input.disabled = false;
-            }
         }
     </script>
 </body>

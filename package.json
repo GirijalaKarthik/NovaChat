@@ -1,20 +1,17 @@
 {
   "name": "novachat-spaces",
   "version": "1.0.0",
-  "description": "Zoom-style chat with AI",
+  "description": "Zoom-style chat",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "body-parser": "^1.20.2",
-    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "nanoid": "3.3.4",
-    "openai": "^4.0.0",
     "socket.io": "^4.7.2"
   },
   "engines": {
     "node": ">=14.0.0"
   }
-} 
+}
