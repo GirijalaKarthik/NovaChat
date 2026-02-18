@@ -1,22 +1,20 @@
 {
-  "name": "student-registration",
+  "name": "novachat-spaces",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Zoom-style chat with AI",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "body-parser": "^2.2.1",
-    "dotenv": "^17.2.3",
-    "express": "^5.2.1",
-    "http": "^0.0.1-security",
-    "mysql": "^2.18.1",
-    "mysql2": "^3.16.0",
-    "nanoid": "^3.0.0",
-    "socket.io": "^4.8.3"
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "nanoid": "3.3.4",
+    "openai": "^4.0.0",
+    "socket.io": "^4.7.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
