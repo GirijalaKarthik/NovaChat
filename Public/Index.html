@@ -16,11 +16,7 @@
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
         }
 
-        #login-screen { 
-            display: flex; align-items: center; justify-content: center; 
-            width: 100%; height: 100%; 
-            position: absolute; z-index: 1000; background: #050505; 
-        }
+        #login-screen { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; position: absolute; z-index: 1000; background: #050505; }
         
         .login-card { 
             background: rgba(20, 20, 20, 0.95);
@@ -39,7 +35,7 @@
         }
         .login-card input:focus { border-color: #FFD700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
 
-        /* THE GOLD BUTTON */
+        /* GOLD BUTTON STYLES */
         .btn-gold { 
             background: linear-gradient(135deg, #FFD700, #FFA500); 
             border: none; color: #000; padding: 12px; border-radius: 50px; 
@@ -47,7 +43,6 @@
             box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
             display: flex; justify-content: center; align-items: center; gap: 10px;
         }
-        
         .btn-outline-gold {
             background: transparent; border: 1px solid #FFD700;
             color: #FFD700; padding: 12px; border-radius: 50px;
@@ -55,14 +50,8 @@
         }
         .btn-outline-gold:hover { background: rgba(255, 215, 0, 0.1); color: white; }
 
-        /* MAIN APP STYLES */
-        #app-screen { 
-            display: none; 
-            position: absolute; top: 0; bottom: 0; left: 0; right: 0;
-            background: transparent; overflow: hidden;
-            display: flex; flex-direction: row;
-        }
-        
+        /* APP LAYOUT */
+        #app-screen { display: none; position: absolute; top: 0; bottom: 0; left: 0; right: 0; background: transparent; overflow: hidden; display: flex; flex-direction: row; }
         .sidebar { width: 300px; background: #0a0a0a; border-right: 1px solid rgba(255,215,0,0.1); display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 25px; border-bottom: 1px solid rgba(255, 215, 0, 0.1); white-space: nowrap; overflow: hidden;}
         
@@ -86,17 +75,21 @@
         .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; background: rgba(255, 215, 0, 0.1); color: #FFD700; border: 1px solid rgba(255, 215, 0, 0.2); flex-shrink: 0; }
         .notification-badge { background-color: #FFD700; color: black; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; font-weight: bold; position: absolute; right: 10px; top: 35%; }
 
-        /* CODE MODAL */
+        /* CODE MODAL & DISPLAY */
         #code-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
-        .code-card { background: #111; padding: 30px; border-radius: 20px; border: 2px solid #FFD700; text-align: center; width: 350px; box-shadow: 0 0 50px rgba(255, 215, 0, 0.3); }
+        .code-card { background: #111; padding: 30px; border-radius: 20px; border: 2px solid #FFD700; text-align: center; width: 350px; }
         .big-code { font-size: 32px; color: #FFD700; letter-spacing: 5px; font-weight: 800; margin: 20px 0; user-select: all; }
-
         .space-code-display { border: 1px solid #FFD700; background: rgba(255, 215, 0, 0.1); color: #FFD700; padding: 5px 15px; border-radius: 20px; font-weight: bold; letter-spacing: 2px; font-size: 0.9rem; margin-right: 10px; }
+
+        /* AI MENU */
+        .ai-menu { display: none; position: absolute; top: 60px; right: 140px; background: #1a1a1a; border: 1px solid #FFD700; border-radius: 10px; padding: 10px; width: 200px; z-index: 100; box-shadow: 0 0 15px rgba(0,0,0,0.8); }
+        .ai-btn { display: block; width: 100%; text-align: left; background: transparent; color: #ddd; border: none; padding: 10px; border-radius: 5px; font-size: 14px; margin-bottom: 2px;}
+        .ai-btn:hover { background: rgba(255, 215, 0, 0.2); color: #FFD700; }
+        .ai-btn i { width: 20px; text-align: center; color: #FFD700; margin-right: 5px;}
 
         @media (max-width: 768px) {
             .sidebar { width: 60px; } 
             .sidebar-header h4, .sidebar-header small { display: none; } 
-            .sidebar-header i { font-size: 1.5rem; margin: 0 auto; display: block; text-align: center; color: #FFD700;}
             .list-group-item div:nth-child(2) { display: none; }
             .login-card { width: 90%; padding: 20px; }
         }
@@ -109,7 +102,7 @@
             <h2 class="fw-bold mb-4" style="color: #FFD700;"><i class="fas fa-meteor me-2"></i>NovaChat</h2>
             <input type="text" id="nickname" placeholder="Enter Your Nickname" autocomplete="off">
             <div id="join-inputs" style="display: none;">
-                <input type="text" id="space-code-input" placeholder="Enter Space Code (e.g. X9Y2Z1)" style="text-transform: uppercase; letter-spacing: 2px; border-color: #FFD700;">
+                <input type="text" id="space-code-input" placeholder="Space Code (e.g. X9Y2Z1)" style="text-transform: uppercase; letter-spacing: 2px; border-color: #FFD700;">
             </div>
             
             <button id="btn-create" onclick="createSpace()" class="btn btn-gold w-100 mb-2">Create New Space <i class="fas fa-rocket"></i></button>
@@ -123,7 +116,7 @@
     <div id="code-modal">
         <div class="code-card">
             <h4 style="color: white;">Space Created!</h4>
-            <p style="color: #888;">Share this code with your friends:</p>
+            <p style="color: #888;">Share this code:</p>
             <div class="big-code" id="generated-code">...</div>
             <button class="btn btn-gold w-100 mb-2" onclick="copyCode()">Copy Code</button>
             <button class="btn btn-outline-gold w-100" onclick="enterApp()">OK, Enter Chat</button>
@@ -149,13 +142,18 @@
                 <div class="d-flex align-items-center gap-2">
                     <div id="header-code-display" class="space-code-display">CODE: ...</div>
                     
+                    <button class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="toggleAIMenu()">
+                        <i class="fas fa-robot"></i> <span class="d-none d-md-inline">AI Assist</span>
+                    </button>
                     <button class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="clearLocalHistory()">
                         <i class="fas fa-trash"></i> <span class="d-none d-md-inline">History</span>
                     </button>
                     <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="endSpace()">
-                        <i class="fas fa-power-off"></i> <span class="d-none d-md-inline">End Space</span>
+                        <i class="fas fa-power-off"></i> <span class="d-none d-md-inline">End</span>
                     </button>
                 </div>
+                
+                <div id="ai-menu" class="ai-menu"></div>
             </div>
             
             <ul id="messages"></ul>
@@ -170,15 +168,10 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let myName = "";
-        let currentRecipient = "Everyone"; 
-        let mySpaceCode = "";
-        let unreadCounts = {};
-        
-        // --- PERSISTENCE STORE ---
-        // chatStore = { 'Everyone': [], 'Deva': [], 'Priya': [] }
+        let myName = "", currentRecipient = "Everyone", mySpaceCode = "", unreadCounts = {};
         let chatStore = { 'Everyone': [] };
 
+        // --- SPACE LOGIC ---
         function showJoinMode() {
             document.getElementById("btn-create").style.display = "none";
             document.getElementById("btn-join-mode").style.display = "none";
@@ -186,7 +179,6 @@
             document.getElementById("btn-join-submit").style.display = "block";
             document.getElementById("btn-back").style.display = "block";
         }
-
         function resetLogin() {
             document.getElementById("btn-create").style.display = "flex";
             document.getElementById("btn-join-mode").style.display = "block";
@@ -195,18 +187,16 @@
             document.getElementById("btn-back").style.display = "none";
             document.getElementById("login-error").innerText = "";
         }
-
         function createSpace() {
             const name = document.getElementById("nickname").value.trim();
-            if(!name) { document.getElementById("login-error").innerText = "Please enter a nickname"; return; }
+            if(!name) return;
             myName = name;
             socket.emit("create_space", name);
         }
-
         function joinSpace() {
             const name = document.getElementById("nickname").value.trim();
             const code = document.getElementById("space-code-input").value.trim().toUpperCase();
-            if(!name || !code) { document.getElementById("login-error").innerText = "Name and Code required"; return; }
+            if(!name || !code) return;
             myName = name;
             socket.emit("join_space", { name: name, code: code });
         }
@@ -217,12 +207,7 @@
             document.getElementById("login-screen").style.display = "none"; 
             document.getElementById("code-modal").style.display = "flex"; 
         });
-
-        socket.on("joined_success", (data) => {
-            mySpaceCode = data.code;
-            enterApp();
-        });
-
+        socket.on("joined_success", (data) => { mySpaceCode = data.code; enterApp(); });
         socket.on("error_msg", (msg) => document.getElementById("login-error").innerText = msg);
 
         function enterApp() {
@@ -231,60 +216,29 @@
             document.getElementById("app-screen").style.display = "flex";
             document.getElementById("my-name-display").innerText = myName;
             document.getElementById("header-code-display").innerText = "CODE: " + mySpaceCode;
-            chatStore = { 'Everyone': [] }; // Reset store on new entry
+            chatStore = { 'Everyone': [] };
             switchChat("Everyone");
         }
-
-        function copyCode() {
-            navigator.clipboard.writeText(document.getElementById("generated-code").innerText);
-            alert("Code Copied!");
-        }
-
-        function endSpace() {
-            if(confirm("Are you sure you want to Leave/End this Space?")) {
-                socket.emit("end_space");
-                location.reload(); // Returns to login page
-            }
-        }
-
-        function clearLocalHistory() {
-            if(confirm("Clear history for this chat?")) {
-                chatStore[currentRecipient] = [];
-                document.getElementById("messages").innerHTML = "";
-            }
-        }
+        function copyCode() { navigator.clipboard.writeText(document.getElementById("generated-code").innerText); alert("Code Copied!"); }
+        function endSpace() { if(confirm("End/Leave Space?")) { socket.emit("end_space"); location.reload(); } }
+        function clearLocalHistory() { chatStore[currentRecipient] = []; document.getElementById("messages").innerHTML = ""; }
 
         // --- CHAT LOGIC ---
         function switchChat(user) {
-            currentRecipient = user;
-            unreadCounts[user] = 0;
-            updateUserListUI();
-
-            const title = document.getElementById("chat-title");
-            const status = document.getElementById("chat-status");
-
-            if (user === "Everyone") {
-                title.innerText = "Public Space";
-                status.innerText = "Space Chat";
-            } else {
-                title.innerText = user;
-                status.innerText = "🔒 Private Signal";
-            }
-            
+            currentRecipient = user; unreadCounts[user] = 0; updateUserListUI();
+            document.getElementById("chat-title").innerText = user === "Everyone" ? "Public Space" : user;
             document.querySelectorAll(".list-group-item").forEach(el => el.classList.remove("active-chat"));
             const activeItem = document.getElementById("user-" + user);
             if(activeItem) activeItem.classList.add("active-chat");
-
-            // RESTORE HISTORY
-            const history = chatStore[user] || [];
+            
             const list = document.getElementById("messages");
             list.innerHTML = "";
-            history.forEach(msg => appendMessageToDOM(msg));
+            (chatStore[user] || []).forEach(msg => appendMsg(msg));
         }
 
         function sendMessage() {
             const input = document.getElementById("message-input");
-            if (input.value.trim() !== "") {
+            if (input.value.trim()) {
                 socket.emit("send_message", { msg: input.value, toUser: currentRecipient });
                 input.value = "";
             }
@@ -292,54 +246,29 @@
         function handleEnter(e) { if(e.key === "Enter") sendMessage(); }
 
         socket.on("receive_message", (data) => {
-            // STORE THE MESSAGE
-            if (data.isPrivate) {
-                // If I sent it, store in Recipient's box. If I received it, store in Sender's box.
-                const storageKey = (data.sender === myName) ? data.toUser : data.sender;
-                if (!chatStore[storageKey]) chatStore[storageKey] = [];
-                chatStore[storageKey].push(data);
-            } else {
-                if (!chatStore['Everyone']) chatStore['Everyone'] = [];
-                chatStore['Everyone'].push(data);
-            }
+            const key = data.isPrivate ? (data.sender === myName ? data.toUser : data.sender) : 'Everyone';
+            if (!chatStore[key]) chatStore[key] = [];
+            chatStore[key].push(data);
 
-            // UPDATE UI IF ACTIVE
-            let isActive = false;
-            if (currentRecipient === "Everyone" && !data.isPrivate) isActive = true;
-            if (data.isPrivate) {
-                if ((data.sender === myName && data.toUser === currentRecipient) || 
-                    (data.sender === currentRecipient && data.toUser === myName)) {
-                    isActive = true;
-                }
-            }
+            const isActive = (currentRecipient === "Everyone" && !data.isPrivate) || 
+                             (data.isPrivate && (data.sender === currentRecipient || (data.sender === myName && data.toUser === currentRecipient)));
 
-            if (isActive) {
-                appendMessageToDOM(data);
-            } else {
-                // Notification
-                if (data.isPrivate && data.sender !== myName) {
-                    unreadCounts[data.sender] = (unreadCounts[data.sender] || 0) + 1;
-                    updateUserListUI();
-                }
-            }
+            if (isActive) appendMsg(data);
+            else if (data.sender !== myName) { unreadCounts[data.sender] = (unreadCounts[data.sender] || 0) + 1; updateUserListUI(); }
         });
 
-        function appendMessageToDOM(data) {
+        function appendMsg(data) {
             const list = document.getElementById("messages");
             const li = document.createElement("li");
-            li.style.display = "flex";
-            li.style.flexDirection = "column";
-            li.style.position = "relative";
-            li.style.marginBottom = "10px";
-
+            li.style.display = "flex"; li.style.flexDirection = "column"; li.style.marginBottom = "10px";
+            
             let html = ``;
             if (data.sender !== myName) {
                 li.style.alignItems = "flex-start";
-                html += `<div class="msg-name">${data.sender}</div>
-                         <div class="msg-bubble" style="background:#222; color:white; border-bottom-left-radius:2px;">${data.msg}</div>`;
+                html += `<div class="msg-name">${data.sender}</div><div class="msg-bubble" style="background:#222; color:white;">${data.msg}</div>`;
             } else {
                 li.style.alignItems = "flex-end";
-                html += `<div class="msg-bubble" style="background:linear-gradient(135deg, #FFD700, #FFA500); color:black; font-weight:500; border-bottom-right-radius:2px;">${data.msg}</div>`;
+                html += `<div class="msg-bubble" style="background:linear-gradient(135deg, #FFD700, #FFA500); color:black; font-weight:500;">${data.msg}</div>`;
             }
             li.innerHTML = html;
             list.appendChild(li);
@@ -347,37 +276,91 @@
         }
 
         let currentUsers = [];
-        socket.on("update_user_list", (users) => {
-            currentUsers = users;
-            updateUserListUI();
-        });
+        socket.on("update_user_list", (users) => { currentUsers = users; updateUserListUI(); });
 
         function updateUserListUI() {
             const list = document.getElementById("user-list");
-            let html = `<li class="list-group-item" onclick="switchChat('Everyone')">
-                            <div class="avatar"><i class="fas fa-users"></i></div>
-                            <div><div class="fw-bold">Everyone</div></div>
-                        </li>`;
-            
+            let html = `<li class="list-group-item" onclick="switchChat('Everyone')"><div class="avatar"><i class="fas fa-users"></i></div><div><div class="fw-bold">Everyone</div></div></li>`;
             currentUsers.forEach(u => {
                 if(u.name !== myName) {
-                    let badgeHtml = "";
-                    if (unreadCounts[u.name] > 0) {
-                        badgeHtml = `<span class="notification-badge">${unreadCounts[u.name]}</span>`;
-                    }
+                    let badge = unreadCounts[u.name] > 0 ? `<span class="notification-badge">${unreadCounts[u.name]}</span>` : "";
                     const activeClass = (u.name === currentRecipient) ? "active-chat" : "";
-                    html += `
-                        <li class="list-group-item ${activeClass}" id="user-${u.name}" onclick="switchChat('${u.name}')">
-                            <div class="avatar">${u.name.charAt(0).toUpperCase()}</div>
-                            <div>
-                                <div class="fw-bold">${u.name}</div>
-                                <div style="font-size:0.7rem; color:#2ecc71;">● Online</div>
-                            </div>
-                            ${badgeHtml}
-                        </li>`;
+                    html += `<li class="list-group-item ${activeClass}" id="user-${u.name}" onclick="switchChat('${u.name}')"><div class="avatar">${u.name.charAt(0).toUpperCase()}</div><div><div class="fw-bold">${u.name}</div><div style="font-size:0.7rem; color:#2ecc71;">● Online</div></div>${badge}</li>`;
                 }
             });
             list.innerHTML = html;
+        }
+
+        // --- AI LOGIC ---
+        function toggleAIMenu() {
+            const menu = document.getElementById("ai-menu");
+            if(menu.style.display === "block") { menu.style.display = "none"; return; }
+            
+            if(currentRecipient === 'Everyone') {
+                menu.innerHTML = `
+                    <button class="ai-btn" onclick="callAI('summarize')"><i class="fas fa-list-ul"></i> Summarize Chat</button>
+                    <button class="ai-btn" onclick="callAI('translate')"><i class="fas fa-language"></i> Translate Last</button>
+                `;
+            } else {
+                menu.innerHTML = `
+                    <button class="ai-btn" onclick="callAI('suggest')"><i class="fas fa-magic"></i> Suggest Reply</button>
+                    <button class="ai-btn" onclick="callAI('translate')"><i class="fas fa-language"></i> Translate Last</button>
+                `;
+            }
+            menu.style.display = "block";
+        }
+        
+        // Hide menu when clicking elsewhere
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById("ai-menu");
+            if (!e.target.closest('.btn-outline-warning') && !e.target.closest('.ai-menu')) menu.style.display = "none";
+        });
+
+        async function callAI(action) {
+            const menu = document.getElementById("ai-menu");
+            menu.style.display = "none";
+            const input = document.getElementById("message-input");
+            
+            // CONTEXT GATHERING
+            let context = "";
+            let endpoint = "";
+            let body = {};
+            const bubbles = document.querySelectorAll("#messages .msg-bubble");
+            bubbles.forEach(b => context += b.innerText + "\n");
+
+            if(!context) { alert("Chat is empty!"); return; }
+
+            if (action === 'translate') {
+                // Only last message
+                const lastMsg = bubbles[bubbles.length-1].innerText;
+                endpoint = '/api/ai/translate';
+                body = { text: lastMsg };
+                input.value = "🤖 Translating...";
+            } else if (action === 'summarize') {
+                endpoint = '/api/ai/summarize';
+                body = { chatHistory: context };
+                input.value = "🤖 Summarizing...";
+            } else {
+                endpoint = '/api/ai/suggest';
+                body = { chatHistory: context, myName: myName };
+                input.value = "🤖 Thinking...";
+            }
+
+            input.disabled = true;
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                input.value = data.result || "AI Error";
+            } catch(e) {
+                input.value = "AI Failed";
+            } finally {
+                input.disabled = false;
+            }
         }
     </script>
 </body>
