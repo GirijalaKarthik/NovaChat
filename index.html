@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="NovaChat - Secure, frictionless, temporary chat rooms.">
     <meta name="keywords" content="novachat, chat rooms, secure chat, ephemeral chat">
-    <meta name="google-site-verification" content="_IfgdZhgnjJV7t3ozYf3i6Lzbo0yioP91bcZQ_vZKRE" />
     <title>NovaChat</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -280,10 +279,10 @@
             currentUsers.forEach(u => {
                 if(u.name !== myName) {
                     let badge = unreadCounts[u.name] > 0 ? `<span class="notification-badge">${unreadCounts[u.name]}</span>` : "";
-                    let kickBtn = isHost ? `<i class="fas fa-times-circle text-danger ms-auto" style="cursor:pointer; font-size:1.2rem; z-index:10;" onclick="event.stopPropagation(); kickUser('${u.name}')" title="Kick User"></i>` : '';
+                    let kickBtn = isHost ? `<i class="fas fa-times-circle text-danger ms-auto kick-btn" style="cursor:pointer; font-size:1.2rem; z-index:10; display:none;" onclick="event.stopPropagation(); kickUser('${u.name}')" title="Kick User"></i>` : '';
                     
                     const activeClass = (u.name === currentRecipient) ? "active-chat" : "";
-                    html += `<li class="list-group-item ${activeClass}" id="user-${u.name}" onclick="switchChat('${u.name}')" style="display:flex; align-items:center;">
+                    html += `<li class="list-group-item ${activeClass}" id="user-${u.name}" onclick="switchChat('${u.name}')" style="display:flex; align-items:center;" onmouseenter="const btn = this.querySelector('.kick-btn'); if(btn) btn.style.display='inline-block';" onmouseleave="const btn = this.querySelector('.kick-btn'); if(btn) btn.style.display='none';">
                         <div class="avatar">${u.name.charAt(0).toUpperCase()}</div>
                         <div style="flex-grow: 1;">
                             <div class="fw-bold">${u.name}</div>
