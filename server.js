@@ -4,7 +4,7 @@ const { Server } = require("socket.io");
 const path = require("path");
 const { customAlphabet } = require('nanoid');
 const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const nanoid = customAlphabet(alphabet, 6); // Generates codes like "X7Y2Z1"
+const nanoid = customAlphabet(alphabet, 6); 
 
 const app = express();
 const server = http.createServer(app);
@@ -16,13 +16,11 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "Public", "Index.html"));
 });
 
-// --- SPACE DATA ---
 let spaces = {}; 
 let users = {}; 
 
 io.on("connection", (socket) => {
 
-    // 1. CREATE SPACE
     socket.on("create_space", (name) => {
         const code = nanoid();
         spaces[code] = { hostId: socket.id, users: [] };
@@ -35,7 +33,6 @@ io.on("connection", (socket) => {
         io.to(code).emit("update_user_list", spaces[code].users);
     });
 
-    // 2. JOIN SPACE
     socket.on("join_space", ({ name, code }) => {
         if (!spaces[code]) {
             socket.emit("error_msg", "Invalid or Expired Space Code");
@@ -49,7 +46,6 @@ io.on("connection", (socket) => {
         io.to(code).emit("update_user_list", spaces[code].users);
     });
 
-    // 3. SEND MESSAGE
     socket.on("send_message", (data) => {
         const user = users[socket.id];
         if (!user) return;
@@ -73,7 +69,6 @@ io.on("connection", (socket) => {
         }
     });
 
-    // 4. END SPACE
     socket.on("end_space", () => {
         const user = users[socket.id];
         if (user && spaces[user.space] && spaces[user.space].hostId === socket.id) {
@@ -81,7 +76,6 @@ io.on("connection", (socket) => {
         }
     });
 
-    // 5. DISCONNECT
     socket.on("disconnect", () => {
         const user = users[socket.id];
         if (user) {
