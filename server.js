@@ -14,20 +14,21 @@ const PORT = process.env.PORT || 3000;
 // --- AIVEN MYSQL CONNECTION ---
 const pool = mysql.createPool(process.env.DATABASE_URL);
 
-// Initialize Database Table
+// Initialize Database Table (V2 with IP Address)
 const initDb = async () => {
     try {
         await pool.query(`
-            CREATE TABLE IF NOT EXISTS illegal_logs (
+            CREATE TABLE IF NOT EXISTS illegal_logs_v2 (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 space_name VARCHAR(255),
                 sender_name VARCHAR(255),
+                ip_address VARCHAR(45),
                 message_content TEXT,
                 flagged_word VARCHAR(100),
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log("MySQL Connected: Sentinel Table Ready");
+        console.log("MySQL Connected: Sentinel Table V2 Ready");
     } catch (err) {
         console.error("Database Connection Failed:", err);
     }
@@ -56,12 +57,15 @@ function generateCode() {
 
 io.on('connection', (socket) => {
     
+    // Get the user's real IP address (works locally and on Render)
+    const clientIp = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+
     // --- HIDDEN ADMIN SYSTEM ---
     socket.on('admin_login', async (password) => {
         if (password === process.env.ADMIN_PASSWORD) {
             try {
-                // Fetch illegal logs from Aiven
-                const [logs] = await pool.query('SELECT * FROM illegal_logs ORDER BY timestamp DESC');
+                // Fetch illegal logs from Aiven (V2 table)
+                const [logs] = await pool.query('SELECT * FROM illegal_logs_v2 ORDER BY timestamp DESC');
                 
                 // Calculate Active Spaces and Users
                 const activeSpaces = Object.keys(spaces).map(code => ({
@@ -123,11 +127,14 @@ io.on('connection', (socket) => {
         const foundWord = FORBIDDEN_WORDS.find(word => lowerMsg.includes(word));
         if (foundWord) {
             try {
+                // Save to V2 table including the IP Address
                 await pool.query(
-                    'INSERT INTO illegal_logs (space_name, sender_name, message_content, flagged_word) VALUES (?, ?, ?, ?)',
-                    [spaces[code].spaceName, socket.userName, data.msg, foundWord]
+                    'INSERT INTO illegal_logs_v2 (space_name, sender_name, ip_address, message_content, flagged_word) VALUES (?, ?, ?, ?, ?)',
+                    [spaces[code].spaceName, socket.userName, clientIp, data.msg, foundWord]
                 );
-            } catch (err) {}
+            } catch (err) {
+                console.error(err);
+            }
         }
 
         const payload = {

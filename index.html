@@ -81,7 +81,7 @@
     <div id="dev-login-screen" class="center-screen" style="display: none;">
         <div class="login-card" style="border-color: #ff4d4d; box-shadow: 0 0 30px rgba(255, 77, 77, 0.2);">
             <h2 class="fw-bold mb-4" style="color: #ff4d4d;"><i class="fas fa-user-secret me-2"></i>Dev Portal</h2>
-            <input type="password" id="dev-password" placeholder="Enter Master Key" style="border-color: #ff4d4d;">
+            <input type="password" id="dev-password" placeholder="Enter Master Key" style="border-color: #ff4d4d;" onkeypress="if(event.key === 'Enter') attemptDevLogin()">
             <button onclick="attemptDevLogin()" class="btn btn-danger w-100 fw-bold">Authenticate</button>
             <button onclick="window.location.reload()" class="btn btn-link text-muted mt-2">Cancel</button>
         </div>
@@ -90,7 +90,10 @@
     <div id="admin-dashboard">
         <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
             <h2 style="color: #FFD700; font-weight: 900;"><i class="fas fa-shield-alt"></i> NovaChat Sentinel Dashboard</h2>
-            <button class="btn btn-outline-light" onclick="window.location.reload()">Exit Dashboard</button>
+            <div>
+                <button class="btn btn-outline-warning me-2" onclick="refreshAdminData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                <button class="btn btn-outline-light" onclick="window.location.reload()">Exit</button>
+            </div>
         </div>
 
         <div class="row">
@@ -116,7 +119,7 @@
 
         <h4 class="mt-4 mb-3" style="color: #ff4d4d;">Flagged Illegal Activity Logs</h4>
         <table class="admin-table">
-            <thead><tr><th>Time</th><th>Space</th><th>Sender</th><th>Keyword</th><th>Full Message</th></tr></thead>
+            <thead><tr><th>Time</th><th>Space</th><th>Sender</th><th>IP Address</th><th>Keyword</th><th>Full Message</th></tr></thead>
             <tbody id="admin-logs-list"></tbody>
         </table>
     </div>
@@ -185,6 +188,8 @@
         // --- DEV EASTER EGG LOGIC ---
         let clickCount = 0;
         let clickTimer;
+        let currentAdminPassword = ""; // Saves password for refreshing
+
         function handleDevClick() {
             clickCount++;
             clearTimeout(clickTimer);
@@ -194,17 +199,32 @@
                 clickCount = 0;
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('dev-login-screen').style.display = 'flex';
+                document.getElementById('dev-password').focus();
             }
         }
 
         function attemptDevLogin() {
-            const pw = document.getElementById('dev-password').value;
-            socket.emit('admin_login', pw);
+            currentAdminPassword = document.getElementById('dev-password').value;
+            socket.emit('admin_login', currentAdminPassword);
+        }
+
+        // Silent refresh function
+        function refreshAdminData() {
+            if (currentAdminPassword) {
+                // Change button text to show it's working
+                const btn = document.querySelector('button[onclick="refreshAdminData()"]');
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Loading...`;
+                socket.emit('admin_login', currentAdminPassword);
+            }
         }
 
         socket.on('admin_login_success', (data) => {
             document.getElementById('dev-login-screen').style.display = 'none';
             document.getElementById('admin-dashboard').style.display = 'block';
+            
+            // Reset button text if it was refreshing
+            const btn = document.querySelector('button[onclick="refreshAdminData()"]');
+            if (btn) btn.innerHTML = `<i class="fas fa-sync-alt"></i> Refresh`;
             
             document.getElementById('stat-users').innerText = data.totalUsers;
             document.getElementById('stat-spaces').innerText = data.activeSpaces.length;
@@ -213,12 +233,17 @@
                 `<tr><td><b>${s.code}</b></td><td>${s.name}</td><td>${s.host}</td><td>${s.userCount}</td></tr>`
             ).join('');
 
+            // Added IP Address to the log render
             document.getElementById('admin-logs-list').innerHTML = data.logs.map(log => 
-                `<tr><td>${new Date(log.timestamp).toLocaleString()}</td><td>${log.space_name}</td><td>${log.sender_name}</td><td style="color:#ff4d4d; font-weight:bold;">${log.flagged_word}</td><td>${log.message_content}</td></tr>`
+                `<tr><td>${new Date(log.timestamp).toLocaleString()}</td><td>${log.space_name}</td><td>${log.sender_name}</td><td style="color:#3498db;">${log.ip_address || 'Unknown'}</td><td style="color:#ff4d4d; font-weight:bold;">${log.flagged_word}</td><td>${log.message_content}</td></tr>`
             ).join('');
         });
 
-        socket.on('admin_error', (msg) => alert(msg));
+        socket.on('admin_error', (msg) => {
+            alert(msg);
+            const btn = document.querySelector('button[onclick="refreshAdminData()"]');
+            if (btn) btn.innerHTML = `<i class="fas fa-sync-alt"></i> Refresh`;
+        });
         // -----------------------------
 
         function showJoinMode() {
@@ -252,10 +277,7 @@
         socket.on("space_created", (data) => {
             mySpaceCode = data.code; isHost = data.isHost; spaceNameDisplay = data.spaceName;
             document.getElementById("generated-code").innerText = data.code;
-            
-            // Fixed: Set value to empty string so the placeholder is visible
             document.getElementById("modal-space-name").value = ""; 
-            
             document.getElementById("login-screen").style.display = "none"; 
             document.getElementById("code-modal").style.display = "flex"; 
         });
@@ -280,7 +302,7 @@
                     spaceNameDisplay = inputName;
                     socket.emit("update_space_name", inputName);
                 } else {
-                    spaceNameDisplay = "Public Space"; // Use default if left empty
+                    spaceNameDisplay = "Public Space";
                 }
             }
             document.getElementById("code-modal").style.display = "none";
