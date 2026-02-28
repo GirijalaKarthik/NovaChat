@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="NovaChat - Secure, frictionless, temporary chat rooms.">
     <title>NovaChat</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #050505; color: white; margin: 0; padding: 0; position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
         
-        #login-screen { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; position: absolute; z-index: 1000; background: #050505; }
+        .center-screen { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; position: absolute; z-index: 1000; background: #050505; }
         .login-card { background: rgba(20, 20, 20, 0.95); border: 1px solid rgba(255, 215, 0, 0.2); box-shadow: 0 0 30px rgba(255, 215, 0, 0.1); padding: 40px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
         .login-card input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px 25px; border-radius: 50px; width: 100%; outline: none; margin-bottom: 15px; }
         .login-card input:focus { border-color: #FFD700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
@@ -41,12 +40,17 @@
 
         .custom-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; }
         .custom-modal-card { background: #111; padding: 30px; border-radius: 20px; border: 2px solid #FFD700; text-align: center; width: 350px; box-shadow: 0 0 50px rgba(255, 215, 0, 0.2); }
-        
         .big-code { font-size: 32px; color: #FFD700; letter-spacing: 5px; font-weight: 800; margin: 20px 0; user-select: all; }
         .space-code-display { border: 1px solid #FFD700; background: rgba(255, 215, 0, 0.1); color: #FFD700; padding: 5px 15px; border-radius: 20px; font-weight: bold; letter-spacing: 2px; font-size: 0.9rem; margin-right: 10px; }
-
         .big-code-input { width: 100%; background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.5); border-radius: 15px; text-align: center; outline: none; color: #FFD700; font-size: 20px; font-weight: 800; padding: 15px; margin-bottom: 20px; }
-        .big-code-input:focus { border-color: #FFD700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+        
+        /* Admin Dashboard Styles */
+        #admin-dashboard { display: none; position: absolute; inset: 0; background: #0a0a0a; z-index: 3000; overflow-y: auto; padding: 40px; color: white; }
+        .admin-stat-card { background: #111; border: 1px solid rgba(255,215,0,0.3); border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 20px; }
+        .admin-stat-card h3 { color: #FFD700; font-size: 2.5rem; margin: 0; font-weight: 900; }
+        .admin-table { width: 100%; border-collapse: collapse; background: #111; border-radius: 10px; overflow: hidden; margin-bottom: 30px; }
+        .admin-table th, .admin-table td { padding: 15px; border-bottom: 1px solid #222; text-align: left; }
+        .admin-table th { background: #FFD700; color: #000; }
 
         @media (max-width: 768px) {
             .sidebar { width: 60px; } 
@@ -57,10 +61,12 @@
 </head>
 <body>
 
-    <div id="login-screen">
+    <div id="login-screen" class="center-screen">
         <div class="login-card">
             <h2 class="fw-bold mb-4" style="color: #FFD700;"><i class="fas fa-meteor me-2"></i>NovaChat</h2>
-            <input type="text" id="nickname" placeholder="Enter Your Nickname" autocomplete="off">
+            <input type="text" id="nickname" placeholder="Enter Your Nickname" autocomplete="off" onclick="handleDevClick()">
+            <input type="text" id="space-name-input" placeholder="Space Name (e.g. Study Group)">
+            
             <div id="join-inputs" style="display: none;">
                 <input type="text" id="space-code-input" placeholder="Space Code (e.g. X9Y2Z1)" style="text-transform: uppercase;">
             </div>
@@ -73,11 +79,54 @@
         </div>
     </div>
 
+    <div id="dev-login-screen" class="center-screen" style="display: none;">
+        <div class="login-card" style="border-color: #ff4d4d; box-shadow: 0 0 30px rgba(255, 77, 77, 0.2);">
+            <h2 class="fw-bold mb-4" style="color: #ff4d4d;"><i class="fas fa-user-secret me-2"></i>Dev Portal</h2>
+            <input type="password" id="dev-password" placeholder="Enter Master Key" style="border-color: #ff4d4d;">
+            <button onclick="attemptDevLogin()" class="btn btn-danger w-100 fw-bold">Authenticate</button>
+            <button onclick="window.location.reload()" class="btn btn-link text-muted mt-2">Cancel</button>
+        </div>
+    </div>
+
+    <div id="admin-dashboard">
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+            <h2 style="color: #FFD700; font-weight: 900;"><i class="fas fa-shield-alt"></i> NovaChat Sentinel Dashboard</h2>
+            <button class="btn btn-outline-light" onclick="window.location.reload()">Exit Dashboard</button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="admin-stat-card">
+                    <p class="text-muted mb-1">Total Active Users</p>
+                    <h3 id="stat-users">0</h3>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="admin-stat-card">
+                    <p class="text-muted mb-1">Active Spaces</p>
+                    <h3 id="stat-spaces">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="mt-4 mb-3" style="color: #2ecc71;">Live Spaces Directory</h4>
+        <table class="admin-table">
+            <thead><tr><th>Space Code</th><th>Space Name</th><th>Host</th><th>Users Inside</th></tr></thead>
+            <tbody id="admin-spaces-list"></tbody>
+        </table>
+
+        <h4 class="mt-4 mb-3" style="color: #ff4d4d;">Flagged Illegal Activity Logs</h4>
+        <table class="admin-table">
+            <thead><tr><th>Time</th><th>Space</th><th>Sender</th><th>Keyword</th><th>Full Message</th></tr></thead>
+            <tbody id="admin-logs-list"></tbody>
+        </table>
+    </div>
+
     <div id="code-modal" class="custom-modal-overlay">
         <div class="custom-modal-card">
             <h4 style="color: white; margin-bottom: 20px;">Configure Space</h4>
             <p style="color: #888; font-size: 0.9rem; text-align: left;">Name your space:</p>
-            <input type="text" id="space-name-input" class="big-code-input" placeholder="e.g. Study Group">
+            <input type="text" id="modal-space-name" class="big-code-input" placeholder="e.g. Study Group">
             <p style="color: #888; font-size: 0.9rem; text-align: left; margin-bottom: -5px;">Share this code:</p>
             <div class="big-code" id="generated-code">...</div>
             <button class="btn btn-gold w-100 mb-2" onclick="copyCode()">Copy Code</button>
@@ -88,7 +137,6 @@
     <div id="end-modal" class="custom-modal-overlay">
         <div class="custom-modal-card">
             <h4 class="text-danger fw-bold mb-3"><i class="fas fa-exclamation-triangle"></i> End Session?</h4>
-            <p style="color: #ccc; margin-bottom: 25px;">Are you sure you want to exit?</p>
             <div class="d-flex gap-2 justify-content-center">
                 <button class="btn btn-outline-light rounded-pill px-4" onclick="closeEndModal()">Cancel</button>
                 <button class="btn btn-danger rounded-pill px-4 fw-bold" onclick="confirmEndSpace()">Yes, End It</button>
@@ -104,7 +152,6 @@
             </div>
             <ul id="user-list" class="list-group list-group-flush"></ul>
         </div>
-
         <div class="chat-area">
             <div class="chat-header">
                 <div style="overflow: hidden;">
@@ -130,9 +177,51 @@
         const socket = io();
         let myName = "", currentRecipient = "Everyone", mySpaceCode = "", unreadCounts = {}, isHost = false, spaceNameDisplay = "Public Space", chatStore = { 'Everyone': [] };
 
+        // --- DEV EASTER EGG LOGIC ---
+        let clickCount = 0;
+        let clickTimer;
+        function handleDevClick() {
+            clickCount++;
+            clearTimeout(clickTimer);
+            clickTimer = setTimeout(() => { clickCount = 0; }, 2000); // Resets if you pause for 2 seconds
+            
+            if (clickCount >= 15) {
+                clickCount = 0;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dev-login-screen').style.display = 'flex';
+            }
+        }
+
+        function attemptDevLogin() {
+            const pw = document.getElementById('dev-password').value;
+            socket.emit('admin_login', pw);
+        }
+
+        socket.on('admin_login_success', (data) => {
+            document.getElementById('dev-login-screen').style.display = 'none';
+            document.getElementById('admin-dashboard').style.display = 'block';
+            
+            // Populate Dashboard Data
+            document.getElementById('stat-users').innerText = data.totalUsers;
+            document.getElementById('stat-spaces').innerText = data.activeSpaces.length;
+
+            document.getElementById('admin-spaces-list').innerHTML = data.activeSpaces.map(s => 
+                `<tr><td><b>${s.code}</b></td><td>${s.name}</td><td>${s.host}</td><td>${s.userCount}</td></tr>`
+            ).join('');
+
+            document.getElementById('admin-logs-list').innerHTML = data.logs.map(log => 
+                `<tr><td>${new Date(log.timestamp).toLocaleString()}</td><td>${log.space_name}</td><td>${log.sender_name}</td><td style="color:#ff4d4d; font-weight:bold;">${log.flagged_word}</td><td>${log.message_content}</td></tr>`
+            ).join('');
+        });
+
+        socket.on('admin_error', (msg) => alert(msg));
+        // -----------------------------
+
+        // Original Chat Logic
         function showJoinMode() {
             document.getElementById("btn-create").style.display = "none";
             document.getElementById("btn-join-mode").style.display = "none";
+            document.getElementById("space-name-input").style.display = "none";
             document.getElementById("join-inputs").style.display = "block";
             document.getElementById("btn-join-submit").style.display = "block";
             document.getElementById("btn-back").style.display = "block";
@@ -140,15 +229,17 @@
         function resetLogin() {
             document.getElementById("btn-create").style.display = "flex";
             document.getElementById("btn-join-mode").style.display = "block";
+            document.getElementById("space-name-input").style.display = "block";
             document.getElementById("join-inputs").style.display = "none";
             document.getElementById("btn-join-submit").style.display = "none";
             document.getElementById("btn-back").style.display = "none";
         }
         function createSpace() {
             const name = document.getElementById("nickname").value.trim();
+            const spaceName = document.getElementById("space-name-input").value.trim() || "Public Space";
             if(!name) return;
             myName = name;
-            socket.emit("create_space", { name: name, spaceName: "Public Space" });
+            socket.emit("create_space", { name: name, spaceName: spaceName });
         }
         function joinSpace() {
             const name = document.getElementById("nickname").value.trim();
@@ -161,6 +252,7 @@
         socket.on("space_created", (data) => {
             mySpaceCode = data.code; isHost = data.isHost; spaceNameDisplay = data.spaceName;
             document.getElementById("generated-code").innerText = data.code;
+            document.getElementById("modal-space-name").value = spaceNameDisplay;
             document.getElementById("login-screen").style.display = "none"; 
             document.getElementById("code-modal").style.display = "flex"; 
         });
@@ -180,7 +272,7 @@
 
         function enterApp() {
             if (isHost) {
-                const inputName = document.getElementById("space-name-input").value.trim();
+                const inputName = document.getElementById("modal-space-name").value.trim();
                 if (inputName) {
                     spaceNameDisplay = inputName;
                     socket.emit("update_space_name", inputName);
@@ -248,9 +340,15 @@
         }
 
         socket.on("update_user_list", (users) => {
+            currentUsers = users;
+            updateUserListUI();
+        });
+
+        let currentUsers = [];
+        function updateUserListUI() {
             const list = document.getElementById("user-list");
             let html = `<li class="list-group-item ${currentRecipient === 'Everyone' ? 'active-chat' : ''}" onclick="switchChat('Everyone')"><div class="avatar"><i class="fas fa-users"></i></div><div><div class="fw-bold">${spaceNameDisplay}</div></div></li>`;
-            users.forEach(u => {
+            currentUsers.forEach(u => {
                 if(u.name !== myName) {
                     let badge = unreadCounts[u.name] > 0 ? `<span class="notification-badge">${unreadCounts[u.name]}</span>` : "";
                     let kickBtn = isHost ? `<i class="fas fa-times-circle text-danger ms-auto kick-btn" style="cursor:pointer; font-size:1.2rem; display:none;" onclick="event.stopPropagation(); kickUser('${u.name}')"></i>` : '';
@@ -262,7 +360,7 @@
                 }
             });
             list.innerHTML = html;
-        });
+        }
 
         function deleteMessage(msgId) { socket.emit("delete_message", { messageId: msgId }); }
         function kickUser(targetName) { if(confirm(`Kick ${targetName}?`)) socket.emit("kick_user", { targetName: targetName }); }

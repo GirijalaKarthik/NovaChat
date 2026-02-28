@@ -55,7 +55,35 @@ function generateCode() {
 }
 
 io.on('connection', (socket) => {
-    // Create Space
+    
+    // --- HIDDEN ADMIN SYSTEM ---
+    socket.on('admin_login', async (password) => {
+        if (password === process.env.ADMIN_PASSWORD) {
+            try {
+                // Fetch illegal logs from Aiven
+                const [logs] = await pool.query('SELECT * FROM illegal_logs ORDER BY timestamp DESC');
+                
+                // Calculate Active Spaces and Users
+                const activeSpaces = Object.keys(spaces).map(code => ({
+                    code: code,
+                    name: spaces[code].spaceName,
+                    host: spaces[code].users.find(u => u.id === spaces[code].host)?.name || 'Unknown',
+                    userCount: spaces[code].users.length
+                }));
+                
+                let totalUsers = 0;
+                for (const code in spaces) { totalUsers += spaces[code].users.length; }
+
+                socket.emit('admin_login_success', { logs, activeSpaces, totalUsers });
+            } catch (err) {
+                socket.emit('admin_error', 'Database connection error.');
+            }
+        } else {
+            socket.emit('admin_error', 'Access Denied: Incorrect Password');
+        }
+    });
+    // ---------------------------
+
     socket.on('create_space', (data) => {
         const code = generateCode();
         spaces[code] = { host: socket.id, spaceName: data.spaceName, users: [{ id: socket.id, name: data.name }] };
@@ -66,7 +94,6 @@ io.on('connection', (socket) => {
         io.to(code).emit('update_user_list', spaces[code].users);
     });
 
-    // Join Space
     socket.on('join_space', (data) => {
         const code = data.code;
         const name = data.name;
@@ -85,7 +112,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Handle Messages + Sentinel Logic
     socket.on('send_message', async (data) => {
         const code = socket.spaceCode;
         if (!code) return;
@@ -97,22 +123,15 @@ io.on('connection', (socket) => {
         const foundWord = FORBIDDEN_WORDS.find(word => lowerMsg.includes(word));
         if (foundWord) {
             try {
-                // Silently log to Aiven MySQL
                 await pool.query(
                     'INSERT INTO illegal_logs (space_name, sender_name, message_content, flagged_word) VALUES (?, ?, ?, ?)',
                     [spaces[code].spaceName, socket.userName, data.msg, foundWord]
                 );
-            } catch (err) {
-                console.error("Sentinel Logging Error:", err);
-            }
+            } catch (err) {}
         }
 
         const payload = {
-            messageId,
-            sender: socket.userName,
-            msg: data.msg,
-            toUser: data.toUser,
-            isPrivate: data.toUser !== "Everyone"
+            messageId, sender: socket.userName, msg: data.msg, toUser: data.toUser, isPrivate: data.toUser !== "Everyone"
         };
         io.to(code).emit('receive_message', payload);
     });
