@@ -37,10 +37,17 @@ initDb();
 
 // --- SENTINEL KEYWORDS ---
 const FORBIDDEN_WORDS = [
-    'ganja', 'weed', 'drugs', 'cocaine', 'heroin', 'meth', 
-    'kidnap', 'abduct', 'murder', 'kill', 'assassin',
-    'terrorist', 'bomb', 'explosive', 'weapon', 'pistol', 'rifle',
-    'smuggling', 'trafficking', 'extortion'
+     'ganja', 'weed', 'drugs', 'cocaine', 'heroin', 'meth', 
+     'kidnap', 'abduct', 'murder', 'kill', 'assassin',
+     'terrorist', 'bomb', 'explosive', 'weapon', 'pistol', 'rifle',
+     'smuggling', 'trafficking', 'extortion', 'fentanyl', 'lsd', 'ecstasy',
+     'mdma', 'shrooms', 'opioids', 'suicide', 'rape', 'assault', 'pedo',
+     'pedophile', 'jihad', 'stab', 'sniper', 'cartel', 'mafia', 'hitman',
+     'ddos', 'botnet', 'ransomware', 'doxxing', 'carding', 'laundering',
+     'bribe', 'blackmail', 'fraud', 'scam', 'phishing', 'malware', 'darkweb',
+      'tupaki', 'champesta', 'champeyi', 'narukutha', 'narakadam', 'supari',
+       'goonda', 'theevravadi', 'balatkaram', 'atyacharam', 'mathu',
+        'vyabhacharam', 'lanja', 'dengu', 'puku', 'modda', 'lancham'
 ];
 
 app.use(express.static(__dirname));
