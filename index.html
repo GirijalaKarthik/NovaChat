@@ -61,6 +61,7 @@
         <div class="login-card">
             <h2 class="fw-bold mb-4" style="color: #FFD700;"><i class="fas fa-meteor me-2"></i>NovaChat</h2>
             <input type="text" id="nickname" placeholder="Enter Your Nickname" autocomplete="off">
+            <input type="text" id="space-name-input" placeholder="Space Name (e.g. Study Group)" autocomplete="off">
             <div id="join-inputs" style="display: none;">
                 <input type="text" id="space-code-input" placeholder="Space Code (e.g. X9Y2Z1)" style="text-transform: uppercase; letter-spacing: 2px; border-color: #FFD700;">
             </div>
@@ -137,11 +138,13 @@
         const socket = io();
         let myName = "", currentRecipient = "Everyone", mySpaceCode = "", unreadCounts = {};
         let isHost = false;
+        let spaceNameDisplay = "Public Space";
         let chatStore = { 'Everyone': [] };
 
         function showJoinMode() {
             document.getElementById("btn-create").style.display = "none";
             document.getElementById("btn-join-mode").style.display = "none";
+            document.getElementById("space-name-input").style.display = "none";
             document.getElementById("join-inputs").style.display = "block";
             document.getElementById("btn-join-submit").style.display = "block";
             document.getElementById("btn-back").style.display = "block";
@@ -149,6 +152,7 @@
         function resetLogin() {
             document.getElementById("btn-create").style.display = "flex";
             document.getElementById("btn-join-mode").style.display = "block";
+            document.getElementById("space-name-input").style.display = "block";
             document.getElementById("join-inputs").style.display = "none";
             document.getElementById("btn-join-submit").style.display = "none";
             document.getElementById("btn-back").style.display = "none";
@@ -156,9 +160,10 @@
         }
         function createSpace() {
             const name = document.getElementById("nickname").value.trim();
+            const spaceName = document.getElementById("space-name-input").value.trim() || "Public Space";
             if(!name) return;
             myName = name;
-            socket.emit("create_space", name);
+            socket.emit("create_space", { name: name, spaceName: spaceName });
         }
         function joinSpace() {
             const name = document.getElementById("nickname").value.trim();
@@ -171,6 +176,7 @@
         socket.on("space_created", (data) => {
             mySpaceCode = data.code;
             isHost = data.isHost;
+            spaceNameDisplay = data.spaceName;
             document.getElementById("generated-code").innerText = data.code;
             document.getElementById("login-screen").style.display = "none"; 
             document.getElementById("code-modal").style.display = "flex"; 
@@ -178,6 +184,7 @@
         socket.on("joined_success", (data) => { 
             mySpaceCode = data.code; 
             isHost = data.isHost;
+            spaceNameDisplay = data.spaceName;
             enterApp(); 
         });
         socket.on("error_msg", (msg) => document.getElementById("login-error").innerText = msg);
@@ -208,7 +215,7 @@
 
         function switchChat(user) {
             currentRecipient = user; unreadCounts[user] = 0; updateUserListUI();
-            document.getElementById("chat-title").innerText = user === "Everyone" ? "Public Space" : user;
+            document.getElementById("chat-title").innerText = user === "Everyone" ? spaceNameDisplay : user;
             document.querySelectorAll(".list-group-item").forEach(el => el.classList.remove("active-chat"));
             const activeItem = document.getElementById("user-" + user);
             if(activeItem) activeItem.classList.add("active-chat");
@@ -275,7 +282,7 @@
 
         function updateUserListUI() {
             const list = document.getElementById("user-list");
-            let html = `<li class="list-group-item" onclick="switchChat('Everyone')"><div class="avatar"><i class="fas fa-users"></i></div><div><div class="fw-bold">Everyone</div></div></li>`;
+            let html = `<li class="list-group-item ${currentRecipient === 'Everyone' ? 'active-chat' : ''}" id="user-Everyone" onclick="switchChat('Everyone')"><div class="avatar"><i class="fas fa-users"></i></div><div><div class="fw-bold">${spaceNameDisplay}</div></div></li>`;
             currentUsers.forEach(u => {
                 if(u.name !== myName) {
                     let badge = unreadCounts[u.name] > 0 ? `<span class="notification-badge">${unreadCounts[u.name]}</span>` : "";

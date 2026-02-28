@@ -23,13 +23,13 @@ function generateCode() {
 }
 
 io.on('connection', (socket) => {
-    socket.on('create_space', (name) => {
+    socket.on('create_space', (data) => {
         const code = generateCode();
-        spaces[code] = { host: socket.id, users: [{ id: socket.id, name: name }] };
+        spaces[code] = { host: socket.id, spaceName: data.spaceName, users: [{ id: socket.id, name: data.name }] };
         socket.join(code);
         socket.spaceCode = code;
-        socket.userName = name;
-        socket.emit('space_created', { code: code, isHost: true });
+        socket.userName = data.name;
+        socket.emit('space_created', { code: code, isHost: true, spaceName: data.spaceName });
         io.to(code).emit('update_user_list', spaces[code].users);
     });
 
@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
             socket.join(code);
             socket.spaceCode = code;
             socket.userName = name;
-            socket.emit('joined_success', { code: code, isHost: false });
+            socket.emit('joined_success', { code: code, isHost: false, spaceName: spaces[code].spaceName });
             io.to(code).emit('update_user_list', spaces[code].users);
         } else {
             socket.emit('error_msg', 'Invalid Space Code');
