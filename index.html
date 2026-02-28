@@ -65,7 +65,6 @@
         <div class="login-card">
             <h2 class="fw-bold mb-4" style="color: #FFD700;"><i class="fas fa-meteor me-2"></i>NovaChat</h2>
             <input type="text" id="nickname" placeholder="Enter Your Nickname" autocomplete="off" onclick="handleDevClick()">
-            <input type="text" id="space-name-input" placeholder="Space Name (e.g. Study Group)">
             
             <div id="join-inputs" style="display: none;">
                 <input type="text" id="space-code-input" placeholder="Space Code (e.g. X9Y2Z1)" style="text-transform: uppercase;">
@@ -221,7 +220,6 @@
         function showJoinMode() {
             document.getElementById("btn-create").style.display = "none";
             document.getElementById("btn-join-mode").style.display = "none";
-            document.getElementById("space-name-input").style.display = "none";
             document.getElementById("join-inputs").style.display = "block";
             document.getElementById("btn-join-submit").style.display = "block";
             document.getElementById("btn-back").style.display = "block";
@@ -229,17 +227,15 @@
         function resetLogin() {
             document.getElementById("btn-create").style.display = "flex";
             document.getElementById("btn-join-mode").style.display = "block";
-            document.getElementById("space-name-input").style.display = "block";
             document.getElementById("join-inputs").style.display = "none";
             document.getElementById("btn-join-submit").style.display = "none";
             document.getElementById("btn-back").style.display = "none";
         }
         function createSpace() {
             const name = document.getElementById("nickname").value.trim();
-            const spaceName = document.getElementById("space-name-input").value.trim() || "Public Space";
             if(!name) return;
             myName = name;
-            socket.emit("create_space", { name: name, spaceName: spaceName });
+            socket.emit("create_space", { name: name, spaceName: "Public Space" });
         }
         function joinSpace() {
             const name = document.getElementById("nickname").value.trim();
