@@ -23,6 +23,37 @@ function generateCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
+function appendMsg(data) {
+            const list = document.getElementById("messages");
+            const li = document.createElement("li");
+            li.style.display = "flex"; li.style.flexDirection = "column"; li.style.marginBottom = "10px";
+            li.id = data.messageId;
+
+            if (data.isDeleted) {
+                li.innerHTML = `<div class="msg-bubble" style="background:transparent; border:1px dashed rgba(255,255,255,0.2); color:rgba(255,255,255,0.5); font-style:italic; font-size:0.8rem; align-self: center;">Message deleted</div>`;
+                list.appendChild(li);
+                list.scrollTop = list.scrollHeight;
+                return;
+            }
+
+            let delBtn = '';
+            if (data.sender === myName || isHost) {
+                delBtn = `<i class="fas fa-trash text-danger ms-2" style="cursor:pointer; font-size:0.85rem; display:none;" onclick="deleteMessage('${data.messageId}')" title="Delete Message"></i>`;
+            }
+            
+            let html = ``;
+            if (data.sender !== myName) {
+                li.style.alignItems = "flex-start";
+                html += `<div class="msg-name">${data.sender}</div><div class="msg-bubble" style="background:#222; color:white; display:flex; align-items:center; cursor:pointer;" onclick="const btn = this.querySelector('.fa-trash'); if(btn) btn.style.display = btn.style.display === 'none' ? 'inline-block' : 'none';"><span>${data.msg}</span>${delBtn}</div>`;
+            } else {
+                li.style.alignItems = "flex-end";
+                html += `<div class="msg-bubble" style="background:linear-gradient(135deg, #FFD700, #FFA500); color:black; font-weight:500; display:flex; align-items:center; cursor:pointer;" onclick="const btn = this.querySelector('.fa-trash'); if(btn) btn.style.display = btn.style.display === 'none' ? 'inline-block' : 'none';"><span>${data.msg}</span>${delBtn}</div>`;
+            }
+            li.innerHTML = html;
+            list.appendChild(li);
+            list.scrollTop = list.scrollHeight;
+        }
+
 io.on('connection', (socket) => {
     socket.on('create_space', (name) => {
         const code = generateCode();
