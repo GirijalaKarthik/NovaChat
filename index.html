@@ -159,8 +159,14 @@
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <div id="header-code-display" class="space-code-display">CODE: ...</div>
-                    <button class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="clearLocalHistory()">History</button>
-                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="showEndModal()">End</button>
+                    
+                    <button class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="clearLocalHistory()">
+                        <i class="fas fa-trash"></i> <span class="d-none d-md-inline">History</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="showEndModal()">
+                        <i class="fas fa-power-off"></i> <span class="d-none d-md-inline">End</span>
+                    </button>
+
                 </div>
             </div>
             <ul id="messages"></ul>
@@ -182,7 +188,7 @@
         function handleDevClick() {
             clickCount++;
             clearTimeout(clickTimer);
-            clickTimer = setTimeout(() => { clickCount = 0; }, 2000); // Resets if you pause for 2 seconds
+            clickTimer = setTimeout(() => { clickCount = 0; }, 2000); 
             
             if (clickCount >= 15) {
                 clickCount = 0;
@@ -200,7 +206,6 @@
             document.getElementById('dev-login-screen').style.display = 'none';
             document.getElementById('admin-dashboard').style.display = 'block';
             
-            // Populate Dashboard Data
             document.getElementById('stat-users').innerText = data.totalUsers;
             document.getElementById('stat-spaces').innerText = data.activeSpaces.length;
 
@@ -216,7 +221,6 @@
         socket.on('admin_error', (msg) => alert(msg));
         // -----------------------------
 
-        // Original Chat Logic
         function showJoinMode() {
             document.getElementById("btn-create").style.display = "none";
             document.getElementById("btn-join-mode").style.display = "none";
@@ -248,7 +252,10 @@
         socket.on("space_created", (data) => {
             mySpaceCode = data.code; isHost = data.isHost; spaceNameDisplay = data.spaceName;
             document.getElementById("generated-code").innerText = data.code;
-            document.getElementById("modal-space-name").value = spaceNameDisplay;
+            
+            // Fixed: Set value to empty string so the placeholder is visible
+            document.getElementById("modal-space-name").value = ""; 
+            
             document.getElementById("login-screen").style.display = "none"; 
             document.getElementById("code-modal").style.display = "flex"; 
         });
@@ -272,6 +279,8 @@
                 if (inputName) {
                     spaceNameDisplay = inputName;
                     socket.emit("update_space_name", inputName);
+                } else {
+                    spaceNameDisplay = "Public Space"; // Use default if left empty
                 }
             }
             document.getElementById("code-modal").style.display = "none";
