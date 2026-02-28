@@ -10,10 +10,10 @@ const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const spaces = {};
@@ -29,7 +29,7 @@ io.on('connection', (socket) => {
         socket.join(code);
         socket.spaceCode = code;
         socket.userName = name;
-        socket.emit('space_created', { code: code });
+        socket.emit('space_created', { code: code, isHost: true });
         io.to(code).emit('update_user_list', spaces[code].users);
     });
 
@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
             socket.join(code);
             socket.spaceCode = code;
             socket.userName = name;
-            socket.emit('joined_success', { code: code });
+            socket.emit('joined_success', { code: code, isHost: false });
             io.to(code).emit('update_user_list', spaces[code].users);
         } else {
             socket.emit('error_msg', 'Invalid Space Code');
@@ -69,7 +69,7 @@ io.on('connection', (socket) => {
 
     socket.on('delete_message', (data) => {
         const code = socket.spaceCode;
-        if (spaces[code] && spaces[code].host === socket.id) {
+        if (code) {
             io.to(code).emit('message_removed', data.messageId);
         }
     });
@@ -87,6 +87,14 @@ io.on('connection', (socket) => {
                 spaces[code].users = spaces[code].users.filter(u => u.id !== targetUser.id);
                 io.to(code).emit('update_user_list', spaces[code].users);
             }
+        }
+    });
+
+    socket.on('end_space', () => {
+        const code = socket.spaceCode;
+        if (spaces[code] && spaces[code].host === socket.id) {
+            delete spaces[code];
+            io.to(code).emit('space_ended');
         }
     });
 
