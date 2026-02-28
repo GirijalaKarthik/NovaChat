@@ -47,6 +47,22 @@
         .big-code { font-size: 32px; color: #FFD700; letter-spacing: 5px; font-weight: 800; margin: 20px 0; user-select: all; }
         .space-code-display { border: 1px solid #FFD700; background: rgba(255, 215, 0, 0.1); color: #FFD700; padding: 5px 15px; border-radius: 20px; font-weight: bold; letter-spacing: 2px; font-size: 0.9rem; margin-right: 10px; }
 
+        .big-code-input {
+            width: 100%;
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            border-radius: 15px;
+            text-align: center;
+            outline: none;
+            color: #FFD700;
+            font-size: 20px;
+            font-weight: 800;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .big-code-input::placeholder { color: rgba(255, 215, 0, 0.3); font-size: 16px; font-weight: normal; letter-spacing: 1px;}
+        .big-code-input:focus { border-color: #FFD700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+
         @media (max-width: 768px) {
             .sidebar { width: 60px; } 
             .sidebar-header h4, .sidebar-header small { display: none; } 
@@ -61,7 +77,6 @@
         <div class="login-card">
             <h2 class="fw-bold mb-4" style="color: #FFD700;"><i class="fas fa-meteor me-2"></i>NovaChat</h2>
             <input type="text" id="nickname" placeholder="Enter Your Nickname" autocomplete="off">
-            <input type="text" id="space-name-input" placeholder="Space Name (e.g. Study Group)" autocomplete="off">
             <div id="join-inputs" style="display: none;">
                 <input type="text" id="space-code-input" placeholder="Space Code (e.g. X9Y2Z1)" style="text-transform: uppercase; letter-spacing: 2px; border-color: #FFD700;">
             </div>
@@ -76,9 +91,14 @@
 
     <div id="code-modal" class="custom-modal-overlay">
         <div class="custom-modal-card">
-            <h4 style="color: white;">Space Created!</h4>
-            <p style="color: #888;">Share this code:</p>
+            <h4 style="color: white; margin-bottom: 20px;">Configure Space</h4>
+            
+            <p style="color: #888; margin-bottom: 5px; font-size: 0.9rem; text-align: left;">Name your space:</p>
+            <input type="text" id="space-name-input" class="big-code-input" placeholder="e.g. Study Group" autocomplete="off">
+            
+            <p style="color: #888; margin-bottom: -10px; font-size: 0.9rem; text-align: left;">Share this code:</p>
             <div class="big-code" id="generated-code">...</div>
+            
             <button class="btn btn-gold w-100 mb-2" onclick="copyCode()">Copy Code</button>
             <button class="btn btn-outline-gold w-100" onclick="enterApp()">OK, Enter Chat</button>
         </div>
@@ -144,7 +164,6 @@
         function showJoinMode() {
             document.getElementById("btn-create").style.display = "none";
             document.getElementById("btn-join-mode").style.display = "none";
-            document.getElementById("space-name-input").style.display = "none";
             document.getElementById("join-inputs").style.display = "block";
             document.getElementById("btn-join-submit").style.display = "block";
             document.getElementById("btn-back").style.display = "block";
@@ -152,7 +171,6 @@
         function resetLogin() {
             document.getElementById("btn-create").style.display = "flex";
             document.getElementById("btn-join-mode").style.display = "block";
-            document.getElementById("space-name-input").style.display = "block";
             document.getElementById("join-inputs").style.display = "none";
             document.getElementById("btn-join-submit").style.display = "none";
             document.getElementById("btn-back").style.display = "none";
@@ -160,10 +178,9 @@
         }
         function createSpace() {
             const name = document.getElementById("nickname").value.trim();
-            const spaceName = document.getElementById("space-name-input").value.trim() || "Public Space";
             if(!name) return;
             myName = name;
-            socket.emit("create_space", { name: name, spaceName: spaceName });
+            socket.emit("create_space", { name: name, spaceName: "Public Space" });
         }
         function joinSpace() {
             const name = document.getElementById("nickname").value.trim();
@@ -189,7 +206,23 @@
         });
         socket.on("error_msg", (msg) => document.getElementById("login-error").innerText = msg);
 
+        socket.on('space_name_updated', (name) => {
+            spaceNameDisplay = name;
+            if(currentRecipient === 'Everyone') {
+                document.getElementById("chat-title").innerText = name;
+            }
+            updateUserListUI();
+        });
+
         function enterApp() {
+            if (isHost) {
+                const inputName = document.getElementById("space-name-input").value.trim();
+                if (inputName) {
+                    spaceNameDisplay = inputName;
+                    socket.emit("update_space_name", inputName);
+                }
+            }
+            
             document.getElementById("code-modal").style.display = "none";
             document.getElementById("login-screen").style.display = "none";
             document.getElementById("app-screen").style.display = "flex";

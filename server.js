@@ -52,6 +52,14 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('update_space_name', (spaceName) => {
+        const code = socket.spaceCode;
+        if (code && spaces[code] && spaces[code].host === socket.id) {
+            spaces[code].spaceName = spaceName;
+            io.to(code).emit('space_name_updated', spaceName);
+        }
+    });
+
     socket.on('send_message', (data) => {
         const code = socket.spaceCode;
         if (!code) return;
