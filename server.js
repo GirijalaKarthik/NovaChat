@@ -1,97 +1,75 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const path = require("path");
-const { customAlphabet } = require('nanoid');
-const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const nanoid = customAlphabet(alphabet, 6); 
+// server.js (Node.js Backend)
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const { nanoid } = require('nanoid');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static("Public"));
+app.use(express.static(__dirname));
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "Public", "Index.html"));
-});
+const spaces = {};
 
-let spaces = {}; 
-let users = {}; 
-
-io.on("connection", (socket) => {
-
-    socket.on("create_space", (name) => {
-        const code = nanoid();
-        spaces[code] = { hostId: socket.id, users: [] };
-        socket.join(code);
-        
-        users[socket.id] = { name: name, space: code };
-        spaces[code].users.push({ id: socket.id, name: name });
-
-        socket.emit("space_created", { code: code, name: name });
-        io.to(code).emit("update_user_list", spaces[code].users);
+io.on('connection', (socket) => {
+    socket.on('create_space', (username) => {
+        const spaceCode = nanoid(6);
+        spaces[spaceCode] = { host: socket.id, users: [{ id: socket.id, name: username }] };
+        socket.join(spaceCode);
+        socket.emit('space_created', { spaceCode, isHost: true });
+        io.to(spaceCode).emit('update_users', spaces[spaceCode].users);
     });
 
-    socket.on("join_space", ({ name, code }) => {
-        if (!spaces[code]) {
-            socket.emit("error_msg", "Invalid or Expired Space Code");
-            return;
-        }
-        socket.join(code);
-        users[socket.id] = { name: name, space: code };
-        spaces[code].users.push({ id: socket.id, name: name });
-
-        socket.emit("joined_success", { code: code, name: name });
-        io.to(code).emit("update_user_list", spaces[code].users);
-    });
-
-    socket.on("send_message", (data) => {
-        const user = users[socket.id];
-        if (!user) return;
-
-        const messageData = { 
-            sender: user.name, 
-            msg: data.msg, 
-            toUser: data.toUser, 
-            isPrivate: data.toUser !== "Everyone",
-            id: Date.now() 
-        };
-
-        if (data.toUser === "Everyone") {
-            io.to(user.space).emit("receive_message", messageData);
+    socket.on('join_space', ({ spaceCode, username }) => {
+        if (spaces[spaceCode]) {
+            spaces[spaceCode].users.push({ id: socket.id, name: username });
+            socket.join(spaceCode);
+            socket.emit('space_joined', { spaceCode, isHost: false });
+            io.to(spaceCode).emit('update_users', spaces[spaceCode].users);
         } else {
-            const recipient = spaces[user.space].users.find(u => u.name === data.toUser);
-            if (recipient) {
-                io.to(recipient.id).emit("receive_message", messageData); 
-                socket.emit("receive_message", messageData); 
+            socket.emit('error', 'Space not found');
+        }
+    });
+
+    socket.on('send_message', ({ spaceCode, username, text }) => {
+        const messageId = 'msg-' + Math.random().toString(36).substr(2, 9);
+        io.to(spaceCode).emit('receive_message', { messageId, username, text });
+    });
+
+    socket.on('kick_user', ({ spaceCode, targetId }) => {
+        if (spaces[spaceCode] && spaces[spaceCode].host === socket.id) {
+            io.to(targetId).emit('kicked');
+            const targetSocket = io.sockets.sockets.get(targetId);
+            if (targetSocket) {
+                targetSocket.leave(spaceCode);
             }
+            spaces[spaceCode].users = spaces[spaceCode].users.filter(u => u.id !== targetId);
+            io.to(spaceCode).emit('update_users', spaces[spaceCode].users);
         }
     });
 
-    socket.on("end_space", () => {
-        const user = users[socket.id];
-        if (user && spaces[user.space] && spaces[user.space].hostId === socket.id) {
-            delete spaces[user.space]; 
+    socket.on('delete_message', ({ spaceCode, messageId }) => {
+        if (spaces[spaceCode] && spaces[spaceCode].host === socket.id) {
+            io.to(spaceCode).emit('message_removed', messageId);
         }
     });
 
-    socket.on("disconnect", () => {
-        const user = users[socket.id];
-        if (user) {
-            const spaceCode = user.space;
-            if (spaces[spaceCode]) {
-                spaces[spaceCode].users = spaces[spaceCode].users.filter(u => u.id !== socket.id);
-                if (spaces[spaceCode].users.length === 0) {
+    socket.on('disconnect', () => {
+        for (const spaceCode in spaces) {
+            const space = spaces[spaceCode];
+            const userIndex = space.users.findIndex(u => u.id === socket.id);
+            if (userIndex !== -1) {
+                space.users.splice(userIndex, 1);
+                io.to(spaceCode).emit('update_users', space.users);
+                if (space.users.length === 0 || space.host === socket.id) {
                     delete spaces[spaceCode];
-                } else {
-                    io.to(spaceCode).emit("update_user_list", spaces[spaceCode].users);
+                    io.to(spaceCode).emit('space_ended');
                 }
+                break;
             }
-            delete users[socket.id];
         }
     });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`NovaChat Spaces Online: ${PORT}`));
+server.listen(3000, () => console.log('Server running on port 3000'));
