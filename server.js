@@ -9,10 +9,12 @@ const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static(__dirname));
+// Tell Express to serve files from the "public" folder
+app.use(express.static(path.join(__dirname, 'public')));
 
+// Point the root route to the index.html inside the "public" folder
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const spaces = {};
