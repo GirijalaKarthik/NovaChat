@@ -6,7 +6,7 @@
     <meta name="description" content="NovaChat - Secure, frictionless, temporary chat rooms.">
     <meta name="keywords" content="novachat, chat rooms, secure chat, ephemeral chat">
     <meta name="google-site-verification" content="_IfgdZhgnjJV7t3ozYf3i6Lzbo0yioP91bcZQ_vZKRE" />
-    <title>NovaChat hi</title>
+    <title>NovaChat</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -255,16 +255,16 @@
 
             let delBtn = '';
             if (data.sender === myName || isHost) {
-                delBtn = `<i class="fas fa-trash text-danger ms-2" style="cursor:pointer; font-size:0.85rem;" onclick="deleteMessage('${data.messageId}')" title="Delete Message"></i>`;
+                delBtn = `<i class="fas fa-trash text-danger ms-2 del-btn" style="cursor:pointer; font-size:0.85rem; display:none;" onclick="deleteMessage('${data.messageId}')" title="Delete Message"></i>`;
             }
             
             let html = ``;
             if (data.sender !== myName) {
                 li.style.alignItems = "flex-start";
-                html += `<div class="msg-name">${data.sender}</div><div class="msg-bubble" style="background:#222; color:white; display:flex; align-items:center;"><span>${data.msg}</span>${delBtn}</div>`;
+                html += `<div class="msg-name">${data.sender}</div><div class="msg-bubble" style="background:#222; color:white; display:flex; align-items:center;" onmouseenter="const btn = this.querySelector('.del-btn'); if(btn) btn.style.display='inline-block';" onmouseleave="const btn = this.querySelector('.del-btn'); if(btn) btn.style.display='none';"><span>${data.msg}</span>${delBtn}</div>`;
             } else {
                 li.style.alignItems = "flex-end";
-                html += `<div class="msg-bubble" style="background:linear-gradient(135deg, #FFD700, #FFA500); color:black; font-weight:500; display:flex; align-items:center;"><span>${data.msg}</span>${delBtn}</div>`;
+                html += `<div class="msg-bubble" style="background:linear-gradient(135deg, #FFD700, #FFA500); color:black; font-weight:500; display:flex; align-items:center;" onmouseenter="const btn = this.querySelector('.del-btn'); if(btn) btn.style.display='inline-block';" onmouseleave="const btn = this.querySelector('.del-btn'); if(btn) btn.style.display='none';"><span>${data.msg}</span>${delBtn}</div>`;
             }
             li.innerHTML = html;
             list.appendChild(li);
