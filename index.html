@@ -342,7 +342,8 @@
             else if (data.type === 'audio') contentHtml = `<audio controls src="${data.msg}" class="msg-audio"></audio>`;
             else if (data.type === 'file') contentHtml = `<a href="${data.msg}" download="${data.fileName}" style="color:inherit; text-decoration:underline;"><i class="fas fa-file"></i> ${data.fileName}</a>`;
 
-            let editBtn = (data.sender === myName && data.type === 'text') ? `<i class="fas fa-edit text-warning ms-2 action-icon" style="cursor:pointer; font-size:0.85rem; display:none;" onclick="openEdit('${data.messageId}', document.getElementById('text-${data.messageId}').innerText.replace(' (edited)',''))"></i>` : '';
+            // FIXED: Changed text-warning to text-primary so it shows up as blue
+            let editBtn = (data.sender === myName && data.type === 'text') ? `<i class="fas fa-edit text-primary ms-2 action-icon" style="cursor:pointer; font-size:0.85rem; display:none;" onclick="openEdit('${data.messageId}', document.getElementById('text-${data.messageId}').innerText.replace(' (edited)',''))"></i>` : '';
             let delBtn = (data.sender === myName || isHost) ? `<i class="fas fa-trash text-danger ms-2 action-icon" style="cursor:pointer; font-size:0.85rem; display:none;" onclick="deleteMessage('${data.messageId}')"></i>` : '';
 
             let html = ``;
