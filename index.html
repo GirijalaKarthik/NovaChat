@@ -55,15 +55,11 @@
         .admin-table { width: 100%; border-collapse: collapse; background: #111; border-radius: 10px; overflow: hidden; margin-bottom: 30px; }
         .admin-table th, .admin-table td { padding: 15px; border-bottom: 1px solid #222; text-align: left; }
         .admin-table th { background: #FFD700; color: #000; }
-        
-        .msg-actions { display: none; position: absolute; right: -45px; top: 10px; gap: 5px; }
-        .msg-sent:hover .msg-actions { display: flex; }
 
         @media (max-width: 768px) {
             .sidebar { width: 60px; } 
             .sidebar-header h4, .sidebar-header small { display: none; } 
             .list-group-item div:nth-child(2) { display: none; }
-            .msg-actions { position: static; display: flex; justify-content: flex-end; margin-top: 5px; opacity: 0.5; }
         }
     </style>
 </head>
@@ -311,7 +307,6 @@
         socket.on('message_edited', (data) => {
             const el = document.getElementById(`text-${data.messageId}`);
             if(el) { el.innerText = data.newMsg; el.innerHTML += ` <span style="font-size:0.7rem; opacity:0.6;">(edited)</span>`; }
-            // Update local store
             for(let key in chatStore) { chatStore[key].forEach(m => { if(m.messageId === data.messageId) m.msg = data.newMsg; }); }
         });
 
@@ -347,18 +342,16 @@
             else if (data.type === 'audio') contentHtml = `<audio controls src="${data.msg}" class="msg-audio"></audio>`;
             else if (data.type === 'file') contentHtml = `<a href="${data.msg}" download="${data.fileName}" style="color:inherit; text-decoration:underline;"><i class="fas fa-file"></i> ${data.fileName}</a>`;
 
-            let actionsHtml = `<div class="msg-actions">`;
-            if (data.sender === myName && data.type === 'text') actionsHtml += `<i class="fas fa-edit text-warning" style="cursor:pointer;" onclick="openEdit('${data.messageId}', document.getElementById('text-${data.messageId}').innerText.replace(' (edited)',''))"></i>`;
-            if (data.sender === myName || isHost) actionsHtml += `<i class="fas fa-trash text-danger" style="cursor:pointer;" onclick="deleteMessage('${data.messageId}')"></i>`;
-            actionsHtml += `</div>`;
+            let editBtn = (data.sender === myName && data.type === 'text') ? `<i class="fas fa-edit text-warning ms-2 action-icon" style="cursor:pointer; font-size:0.85rem; display:none;" onclick="openEdit('${data.messageId}', document.getElementById('text-${data.messageId}').innerText.replace(' (edited)',''))"></i>` : '';
+            let delBtn = (data.sender === myName || isHost) ? `<i class="fas fa-trash text-danger ms-2 action-icon" style="cursor:pointer; font-size:0.85rem; display:none;" onclick="deleteMessage('${data.messageId}')"></i>` : '';
 
             let html = ``;
             if (data.sender !== myName) {
                 li.style.alignItems = "flex-start";
-                html += `<div class="msg-name">${data.sender}</div><div class="msg-bubble msg-received">${contentHtml}${actionsHtml}</div>`;
+                html += `<div class="msg-name">${data.sender}</div><div class="msg-bubble msg-received" onmouseenter="const btns = this.querySelectorAll('.action-icon'); btns.forEach(b=>b.style.display='inline-block');" onmouseleave="const btns = this.querySelectorAll('.action-icon'); btns.forEach(b=>b.style.display='none');">${contentHtml}${delBtn}</div>`;
             } else {
                 li.style.alignItems = "flex-end";
-                html += `<div class="msg-bubble msg-sent">${contentHtml}${actionsHtml}</div>`;
+                html += `<div class="msg-bubble msg-sent" onmouseenter="const btns = this.querySelectorAll('.action-icon'); btns.forEach(b=>b.style.display='inline-block');" onmouseleave="const btns = this.querySelectorAll('.action-icon'); btns.forEach(b=>b.style.display='none');">${contentHtml}${editBtn}${delBtn}</div>`;
             }
             li.innerHTML = html;
             list.appendChild(li);
