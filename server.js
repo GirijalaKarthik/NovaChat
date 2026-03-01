@@ -7,14 +7,13 @@ const mysql = require('mysql2/promise');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+// Increased buffer size for images/files/audio (10MB)
+const io = new Server(server, { maxHttpBufferSize: 1e7 });
 
 const PORT = process.env.PORT || 3000;
 
-// --- AIVEN MYSQL CONNECTION ---
 const pool = mysql.createPool(process.env.DATABASE_URL);
 
-// Initialize Database Table (V2 with IP Address)
 const initDb = async () => {
     try {
         await pool.query(`
@@ -28,26 +27,19 @@ const initDb = async () => {
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log("MySQL Connected: Sentinel Table V2 Ready");
     } catch (err) {
-        console.error("Database Connection Failed:", err);
+        console.error(err);
     }
 };
 initDb();
 
-// --- SENTINEL KEYWORDS ---
 const FORBIDDEN_WORDS = [
-     'ganja', 'weed', 'drugs', 'cocaine', 'heroin', 'meth', 
-     'kidnap', 'abduct', 'murder', 'kill', 'assassin',
-     'terrorist', 'bomb', 'explosive', 'weapon', 'pistol', 'rifle',
-     'smuggling', 'trafficking', 'extortion', 'fentanyl', 'lsd', 'ecstasy',
-     'mdma', 'shrooms', 'opioids', 'suicide', 'rape', 'assault', 'pedo',
-     'pedophile', 'jihad', 'stab', 'sniper', 'cartel', 'mafia', 'hitman',
-     'ddos', 'botnet', 'ransomware', 'doxxing', 'carding', 'laundering',
-     'bribe', 'blackmail', 'fraud', 'scam', 'phishing', 'malware', 'darkweb',
-      'tupaki', 'champesta', 'champeyi', 'narukutha', 'narakadam', 'supari',
-       'goonda', 'theevravadi', 'balatkaram', 'atyacharam', 'mathu',
-        'vyabhacharam', 'lanja', 'dengu', 'puku', 'modda', 'lancham'
+    'ganja', 'weed', 'drugs', 'cocaine', 'heroin', 'meth', 
+    'kidnap', 'abduct', 'murder', 'kill', 'assassin',
+    'terrorist', 'bomb', 'explosive', 'weapon', 'pistol', 'rifle',
+    'smuggling', 'trafficking', 'extortion', 'tupaki', 'champesta', 
+    'champeyi', 'narukutha', 'narakadam', 'supari', 'goonda', 
+    'theevravadi', 'balatkaram', 'atyacharam', 'mathu', 'vyabhacharam','rape' 
 ];
 
 app.use(express.static(__dirname));
@@ -63,37 +55,28 @@ function generateCode() {
 }
 
 io.on('connection', (socket) => {
-    
-    // Get the user's real IP address (works locally and on Render)
     const clientIp = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
 
-    // --- HIDDEN ADMIN SYSTEM ---
     socket.on('admin_login', async (password) => {
         if (password === process.env.ADMIN_PASSWORD) {
             try {
-                // Fetch illegal logs from Aiven (V2 table)
                 const [logs] = await pool.query('SELECT * FROM illegal_logs_v2 ORDER BY timestamp DESC');
-                
-                // Calculate Active Spaces and Users
                 const activeSpaces = Object.keys(spaces).map(code => ({
                     code: code,
                     name: spaces[code].spaceName,
                     host: spaces[code].users.find(u => u.id === spaces[code].host)?.name || 'Unknown',
                     userCount: spaces[code].users.length
                 }));
-                
                 let totalUsers = 0;
                 for (const code in spaces) { totalUsers += spaces[code].users.length; }
-
                 socket.emit('admin_login_success', { logs, activeSpaces, totalUsers });
             } catch (err) {
-                socket.emit('admin_error', 'Database connection error.');
+                socket.emit('admin_error', 'Database error.');
             }
         } else {
-            socket.emit('admin_error', 'Access Denied: Incorrect Password');
+            socket.emit('admin_error', 'Access Denied');
         }
     });
-    // ---------------------------
 
     socket.on('create_space', (data) => {
         const code = generateCode();
@@ -109,9 +92,7 @@ io.on('connection', (socket) => {
         const code = data.code;
         const name = data.name;
         if (spaces[code]) {
-            const nameExists = spaces[code].users.some(u => u.name === name);
-            if(nameExists) return socket.emit('error_msg', 'Name already taken');
-            
+            if(spaces[code].users.some(u => u.name === name)) return socket.emit('error_msg', 'Name taken');
             spaces[code].users.push({ id: socket.id, name: name });
             socket.join(code);
             socket.spaceCode = code;
@@ -119,8 +100,16 @@ io.on('connection', (socket) => {
             socket.emit('joined_success', { code: code, isHost: false, spaceName: spaces[code].spaceName });
             io.to(code).emit('update_user_list', spaces[code].users);
         } else {
-            socket.emit('error_msg', 'Invalid Space Code');
+            socket.emit('error_msg', 'Invalid Code');
         }
+    });
+
+    socket.on('typing', () => {
+        if (socket.spaceCode) socket.to(socket.spaceCode).emit('user_typing', socket.userName);
+    });
+
+    socket.on('stop_typing', () => {
+        if (socket.spaceCode) socket.to(socket.spaceCode).emit('user_stopped_typing', socket.userName);
     });
 
     socket.on('send_message', async (data) => {
@@ -129,25 +118,48 @@ io.on('connection', (socket) => {
 
         const messageId = 'msg-' + Math.random().toString(36).substr(2, 9);
         const lowerMsg = data.msg.toLowerCase();
-
-        // Check for illegal content
         const foundWord = FORBIDDEN_WORDS.find(word => lowerMsg.includes(word));
+        
         if (foundWord) {
             try {
-                // Save to V2 table including the IP Address
                 await pool.query(
                     'INSERT INTO illegal_logs_v2 (space_name, sender_name, ip_address, message_content, flagged_word) VALUES (?, ?, ?, ?, ?)',
                     [spaces[code].spaceName, socket.userName, clientIp, data.msg, foundWord]
                 );
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) {}
         }
 
-        const payload = {
-            messageId, sender: socket.userName, msg: data.msg, toUser: data.toUser, isPrivate: data.toUser !== "Everyone"
-        };
-        io.to(code).emit('receive_message', payload);
+        io.to(code).emit('receive_message', {
+            messageId, sender: socket.userName, msg: data.msg, type: 'text', toUser: data.toUser, isPrivate: data.toUser !== "Everyone"
+        });
+    });
+
+    socket.on('edit_message', async (data) => {
+        const code = socket.spaceCode;
+        if (!code) return;
+
+        const lowerMsg = data.newMsg.toLowerCase();
+        const foundWord = FORBIDDEN_WORDS.find(word => lowerMsg.includes(word));
+        
+        if (foundWord) {
+            try {
+                await pool.query(
+                    'INSERT INTO illegal_logs_v2 (space_name, sender_name, ip_address, message_content, flagged_word) VALUES (?, ?, ?, ?, ?)',
+                    [spaces[code].spaceName, socket.userName, clientIp, "[EDITED] " + data.newMsg, foundWord]
+                );
+            } catch (err) {}
+        }
+
+        io.to(code).emit('message_edited', { messageId: data.messageId, newMsg: data.newMsg });
+    });
+
+    socket.on('send_media', (data) => {
+        const code = socket.spaceCode;
+        if (!code) return;
+        const messageId = 'msg-' + Math.random().toString(36).substr(2, 9);
+        io.to(code).emit('receive_message', {
+            messageId, sender: socket.userName, msg: data.fileData, fileName: data.fileName, type: data.fileType, toUser: data.toUser, isPrivate: data.toUser !== "Everyone"
+        });
     });
 
     socket.on('update_space_name', (spaceName) => {
@@ -159,8 +171,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('delete_message', (data) => {
-        const code = socket.spaceCode;
-        if (code) io.to(code).emit('message_removed', data.messageId);
+        if (socket.spaceCode) io.to(socket.spaceCode).emit('message_removed', data.messageId);
     });
 
     socket.on('kick_user', (data) => {
