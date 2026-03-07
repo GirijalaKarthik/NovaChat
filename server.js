@@ -7,11 +7,11 @@ const mysql = require('mysql2/promise');
 
 const app = express();
 const server = http.createServer(app);
-// Increased buffer size for images/files/audio (10MB)
-const io = new Server(server, { maxHttpBufferSize: 1e7 });
+const io = new Server(server, { maxHttpBufferSize: 1e7 }); // 10MB limit
 
 const PORT = process.env.PORT || 3000;
 
+// --- AIVEN MYSQL CONNECTION ---
 const pool = mysql.createPool(process.env.DATABASE_URL);
 
 const initDb = async () => {
@@ -27,9 +27,7 @@ const initDb = async () => {
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-    } catch (err) {
-        console.error(err);
-    }
+    } catch (err) { console.error(err); }
 };
 initDb();
 
@@ -37,9 +35,7 @@ const FORBIDDEN_WORDS = [
     'ganja', 'weed', 'drugs', 'cocaine', 'heroin', 'meth', 
     'kidnap', 'abduct', 'murder', 'kill', 'assassin',
     'terrorist', 'bomb', 'explosive', 'weapon', 'pistol', 'rifle',
-    'smuggling', 'trafficking', 'extortion', 'tupaki', 'champesta', 
-    'champeyi', 'narukutha', 'narakadam', 'supari', 'goonda', 
-    'theevravadi', 'balatkaram', 'atyacharam', 'mathu', 'vyabhacharam','rape' 
+    'smuggling', 'trafficking', 'extortion', 'rape',
 ];
 
 app.use(express.static(__dirname));
@@ -52,6 +48,25 @@ const spaces = {};
 
 function generateCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// Helper to handle user leaving and passing host controls
+function handleUserLeave(socket) {
+    const code = socket.spaceCode;
+    if (code && spaces[code]) {
+        spaces[code].users = spaces[code].users.filter(u => u.id !== socket.id);
+        
+        if (spaces[code].users.length === 0) {
+            delete spaces[code]; // Room dies only when everyone leaves
+        } else {
+            // If the host left, transfer host to the next oldest person
+            if (spaces[code].host === socket.id) {
+                spaces[code].host = spaces[code].users[0].id;
+                io.to(spaces[code].host).emit('host_transferred');
+            }
+            io.to(code).emit('update_user_list', spaces[code].users);
+        }
+    }
 }
 
 io.on('connection', (socket) => {
@@ -80,7 +95,8 @@ io.on('connection', (socket) => {
 
     socket.on('create_space', (data) => {
         const code = generateCode();
-        spaces[code] = { host: socket.id, spaceName: data.spaceName, users: [{ id: socket.id, name: data.name }] };
+        // Added 'messages' array to store history
+        spaces[code] = { host: socket.id, spaceName: data.spaceName, users: [{ id: socket.id, name: data.name }], messages: [] };
         socket.join(code);
         socket.spaceCode = code;
         socket.userName = data.name;
@@ -98,19 +114,18 @@ io.on('connection', (socket) => {
             socket.spaceCode = code;
             socket.userName = name;
             socket.emit('joined_success', { code: code, isHost: false, spaceName: spaces[code].spaceName });
+            
+            // Send room history to late joiner
+            socket.emit('chat_history', spaces[code].messages);
+            
             io.to(code).emit('update_user_list', spaces[code].users);
         } else {
             socket.emit('error_msg', 'Invalid Code');
         }
     });
 
-    socket.on('typing', () => {
-        if (socket.spaceCode) socket.to(socket.spaceCode).emit('user_typing', socket.userName);
-    });
-
-    socket.on('stop_typing', () => {
-        if (socket.spaceCode) socket.to(socket.spaceCode).emit('user_stopped_typing', socket.userName);
-    });
+    socket.on('typing', () => { if (socket.spaceCode) socket.to(socket.spaceCode).emit('user_typing', socket.userName); });
+    socket.on('stop_typing', () => { if (socket.spaceCode) socket.to(socket.spaceCode).emit('user_stopped_typing', socket.userName); });
 
     socket.on('send_message', async (data) => {
         const code = socket.spaceCode;
@@ -122,16 +137,15 @@ io.on('connection', (socket) => {
         
         if (foundWord) {
             try {
-                await pool.query(
-                    'INSERT INTO illegal_logs_v2 (space_name, sender_name, ip_address, message_content, flagged_word) VALUES (?, ?, ?, ?, ?)',
-                    [spaces[code].spaceName, socket.userName, clientIp, data.msg, foundWord]
-                );
+                await pool.query('INSERT INTO illegal_logs_v2 (space_name, sender_name, ip_address, message_content, flagged_word) VALUES (?, ?, ?, ?, ?)',
+                    [spaces[code].spaceName, socket.userName, clientIp, data.msg, foundWord]);
             } catch (err) {}
         }
 
-        io.to(code).emit('receive_message', {
-            messageId, sender: socket.userName, msg: data.msg, type: 'text', toUser: data.toUser, isPrivate: data.toUser !== "Everyone"
-        });
+        const payload = { messageId, sender: socket.userName, msg: data.msg, type: 'text', toUser: data.toUser, isPrivate: data.toUser !== "Everyone" };
+        if (!payload.isPrivate) spaces[code].messages.push(payload); // Store in history
+
+        io.to(code).emit('receive_message', payload);
     });
 
     socket.on('edit_message', async (data) => {
@@ -143,11 +157,15 @@ io.on('connection', (socket) => {
         
         if (foundWord) {
             try {
-                await pool.query(
-                    'INSERT INTO illegal_logs_v2 (space_name, sender_name, ip_address, message_content, flagged_word) VALUES (?, ?, ?, ?, ?)',
-                    [spaces[code].spaceName, socket.userName, clientIp, "[EDITED] " + data.newMsg, foundWord]
-                );
+                await pool.query('INSERT INTO illegal_logs_v2 (space_name, sender_name, ip_address, message_content, flagged_word) VALUES (?, ?, ?, ?, ?)',
+                    [spaces[code].spaceName, socket.userName, clientIp, "[EDITED] " + data.newMsg, foundWord]);
             } catch (err) {}
+        }
+
+        // Update history
+        if (spaces[code].messages) {
+            const msgObj = spaces[code].messages.find(m => m.messageId === data.messageId);
+            if (msgObj) msgObj.msg = data.newMsg;
         }
 
         io.to(code).emit('message_edited', { messageId: data.messageId, newMsg: data.newMsg });
@@ -157,9 +175,10 @@ io.on('connection', (socket) => {
         const code = socket.spaceCode;
         if (!code) return;
         const messageId = 'msg-' + Math.random().toString(36).substr(2, 9);
-        io.to(code).emit('receive_message', {
-            messageId, sender: socket.userName, msg: data.fileData, fileName: data.fileName, type: data.fileType, toUser: data.toUser, isPrivate: data.toUser !== "Everyone"
-        });
+        const payload = { messageId, sender: socket.userName, msg: data.fileData, fileName: data.fileName, type: data.fileType, toUser: data.toUser, isPrivate: data.toUser !== "Everyone" };
+        if (!payload.isPrivate) spaces[code].messages.push(payload); // Store media in history
+
+        io.to(code).emit('receive_message', payload);
     });
 
     socket.on('update_space_name', (spaceName) => {
@@ -171,7 +190,11 @@ io.on('connection', (socket) => {
     });
 
     socket.on('delete_message', (data) => {
-        if (socket.spaceCode) io.to(socket.spaceCode).emit('message_removed', data.messageId);
+        if (socket.spaceCode && spaces[socket.spaceCode]) {
+            const space = spaces[socket.spaceCode];
+            space.messages = space.messages.filter(m => m.messageId !== data.messageId); // Remove from history
+            io.to(socket.spaceCode).emit('message_removed', data.messageId);
+        }
     });
 
     socket.on('kick_user', (data) => {
@@ -188,25 +211,14 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('end_space', () => {
-        const code = socket.spaceCode;
-        if (spaces[code] && spaces[code].host === socket.id) {
-            delete spaces[code];
-            io.to(code).emit('space_ended');
-        }
+    socket.on('leave_space', () => {
+        handleUserLeave(socket);
+        socket.leave(socket.spaceCode);
+        socket.spaceCode = null;
+        socket.userName = null;
     });
 
-    socket.on('disconnect', () => {
-        const code = socket.spaceCode;
-        if (code && spaces[code]) {
-            spaces[code].users = spaces[code].users.filter(u => u.id !== socket.id);
-            io.to(code).emit('update_user_list', spaces[code].users);
-            if (spaces[code].users.length === 0 || spaces[code].host === socket.id) {
-                delete spaces[code];
-                io.to(code).emit('space_ended');
-            }
-        }
-    });
+    socket.on('disconnect', () => handleUserLeave(socket));
 });
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
