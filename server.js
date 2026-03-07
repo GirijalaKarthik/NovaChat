@@ -35,7 +35,10 @@ const FORBIDDEN_WORDS = [
     'ganja', 'weed', 'drugs', 'cocaine', 'heroin', 'meth', 
     'kidnap', 'abduct', 'murder', 'kill', 'assassin',
     'terrorist', 'bomb', 'explosive', 'weapon', 'pistol', 'rifle',
-    'smuggling', 'trafficking', 'extortion', 'rape',
+    'smuggling', 'trafficking', 'extortion', 'tupaki', 'champesta', 
+    'champeyi', 'narukutha', 'narakadam', 'supari', 'goonda', 
+    'theevravadi', 'balatkaram', 'atyacharam', 'mathu', 'vyabhacharam', 
+    'lanja', 'dengu', 'puku', 'modda', 'lancham'
 ];
 
 app.use(express.static(__dirname));
@@ -64,7 +67,8 @@ function handleUserLeave(socket) {
                 spaces[code].host = spaces[code].users[0].id;
                 io.to(spaces[code].host).emit('host_transferred');
             }
-            io.to(code).emit('update_user_list', spaces[code].users);
+            // UPDATED: Now sending hostId
+            io.to(code).emit('update_user_list', { users: spaces[code].users, hostId: spaces[code].host });
         }
     }
 }
@@ -95,13 +99,13 @@ io.on('connection', (socket) => {
 
     socket.on('create_space', (data) => {
         const code = generateCode();
-        // Added 'messages' array to store history
         spaces[code] = { host: socket.id, spaceName: data.spaceName, users: [{ id: socket.id, name: data.name }], messages: [] };
         socket.join(code);
         socket.spaceCode = code;
         socket.userName = data.name;
         socket.emit('space_created', { code: code, isHost: true, spaceName: data.spaceName });
-        io.to(code).emit('update_user_list', spaces[code].users);
+        // UPDATED: Now sending hostId
+        io.to(code).emit('update_user_list', { users: spaces[code].users, hostId: spaces[code].host });
     });
 
     socket.on('join_space', (data) => {
@@ -115,10 +119,10 @@ io.on('connection', (socket) => {
             socket.userName = name;
             socket.emit('joined_success', { code: code, isHost: false, spaceName: spaces[code].spaceName });
             
-            // Send room history to late joiner
             socket.emit('chat_history', spaces[code].messages);
             
-            io.to(code).emit('update_user_list', spaces[code].users);
+            // UPDATED: Now sending hostId
+            io.to(code).emit('update_user_list', { users: spaces[code].users, hostId: spaces[code].host });
         } else {
             socket.emit('error_msg', 'Invalid Code');
         }
@@ -206,7 +210,8 @@ io.on('connection', (socket) => {
                 const targetSocket = io.sockets.sockets.get(targetUser.id);
                 if (targetSocket) targetSocket.leave(code);
                 spaces[code].users = spaces[code].users.filter(u => u.id !== targetUser.id);
-                io.to(code).emit('update_user_list', spaces[code].users);
+                // UPDATED: Now sending hostId
+                io.to(code).emit('update_user_list', { users: spaces[code].users, hostId: spaces[code].host });
             }
         }
     });

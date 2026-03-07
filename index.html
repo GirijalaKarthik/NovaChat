@@ -256,6 +256,7 @@
         socket.on('host_transferred', () => {
             isHost = true;
             alert("The previous host left. You are now the host of this space.");
+            // Head display already shows myName, so we just need to refresh list to see kick buttons
             updateUserListUI(); 
         });
 
@@ -387,17 +388,47 @@
             list.scrollTop = list.scrollHeight;
         }
 
-        socket.on("update_user_list", (users) => { currentUsers = users; updateUserListUI(); });
+        // UPDATED: Now destructures data to get users and hostId
+        socket.on("update_user_list", (data) => { 
+            currentUsers = data.users; 
+            currentHostId = data.hostId; 
+            updateUserListUI(); 
+        });
+
         let currentUsers = [];
+        let currentHostId = ""; // Track the host ID
+
         function updateUserListUI() {
             const list = document.getElementById("user-list");
             let html = `<li class="list-group-item ${currentRecipient === 'Everyone' ? 'active-chat' : ''}" onclick="switchChat('Everyone')"><div class="avatar"><i class="fas fa-users"></i></div><div><div class="fw-bold">${spaceNameDisplay}</div></div></li>`;
+            
+            // Check if standard header display needs (host)
+            const headDisplay = document.getElementById("my-name-display");
+            // Find myself in user list to get my actual ID
+            const meInList = currentUsers.find(u => u.name === myName);
+            if(headDisplay && meInList) {
+                if(meInList.id === currentHostId) {
+                    headDisplay.innerText = `${myName} (host)`;
+                } else {
+                    headDisplay.innerText = myName;
+                }
+            }
+
             currentUsers.forEach(u => {
                 if(u.name !== myName) {
                     let badge = unreadCounts[u.name] > 0 ? `<span class="notification-badge">${unreadCounts[u.name]}</span>` : "";
                     let kickBtn = isHost ? `<i class="fas fa-times-circle text-danger ms-auto kick-btn" style="cursor:pointer; font-size:1.2rem; display:none;" onclick="event.stopPropagation(); kickUser('${u.name}')"></i>` : '';
+                    
+                    // Determine if (host) tag is needed for this user
+                    const hostTag = (u.id === currentHostId) ? ' (host)' : '';
+
                     html += `<li class="list-group-item ${u.name === currentRecipient ? 'active-chat' : ''}" onclick="switchChat('${u.name}')" onmouseenter="const btn = this.querySelector('.kick-btn'); if(btn) btn.style.display='inline-block';" onmouseleave="const btn = this.querySelector('.kick-btn'); if(btn) btn.style.display='none';">
-                        <div class="avatar">${u.name.charAt(0).toUpperCase()}</div><div style="flex-grow: 1;"><div class="fw-bold">${u.name}</div><div style="font-size:0.7rem; color:#2ecc71;">● Online</div></div>${badge}${kickBtn}
+                        <div class="avatar">${u.name.charAt(0).toUpperCase()}</div>
+                        <div style="flex-grow: 1;">
+                            <div class="fw-bold">${u.name}${hostTag}</div>
+                            <div style="font-size:0.7rem; color:#2ecc71;">● Online</div>
+                        </div>
+                        ${badge}${kickBtn}
                     </li>`;
                 }
             });
