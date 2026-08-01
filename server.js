@@ -35,10 +35,7 @@ const FORBIDDEN_WORDS = [
     'ganja', 'weed', 'drugs', 'cocaine', 'heroin', 'meth', 
     'kidnap', 'abduct', 'murder', 'kill', 'assassin',
     'terrorist', 'bomb', 'explosive', 'weapon', 'pistol', 'rifle',
-    'smuggling', 'trafficking', 'extortion', 'tupaki', 'champesta', 
-    'champeyi', 'narukutha', 'narakadam', 'supari', 'goonda', 
-    'theevravadi', 'balatkaram', 'atyacharam', 'mathu', 'vyabhacharam', 
-    'lanja', 'dengu', 'puku', 'modda', 'lancham'
+    'smuggling', 'trafficking', 'extortion'
 ];
 
 app.use(express.static(__dirname));
